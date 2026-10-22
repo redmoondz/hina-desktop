@@ -34,9 +34,9 @@ test("regular key hotkeys are left to globalShortcut in tap mode", () => {
   assert.deepEqual(mgr.getNativeListenerKeys("tap"), []);
 });
 
-test("push mode watches the dictation key even when it is a regular key", () => {
+test("push mode watches dictation and assistant keys even when they are regular keys", () => {
   const mgr = makeManager({ dictation: "F8", voiceAgent: "Control+Shift+A" });
-  assert.deepEqual(mgr.getNativeListenerKeys("push"), ["F8"]);
+  assert.deepEqual(mgr.getNativeListenerKeys("push"), ["F8", "Control+Shift+A"]);
 });
 
 test("push mode does not push-enable non-dictation slots", () => {

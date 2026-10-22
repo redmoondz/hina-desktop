@@ -1,0 +1,30 @@
+{
+  "component": "Real HinaWaitingStatus mounted in Chromium; browser clock advanced 121 seconds",
+  "results": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "elapsed": "02:01",
+      "pending": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "elapsed": "02:01",
+      "pending": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "elapsed": "02:01",
+      "pending": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "elapsed": "02:01",
+      "pending": true
+    }
+  ],
+  "errors": []
+}

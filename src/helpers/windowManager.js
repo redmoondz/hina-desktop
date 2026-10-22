@@ -982,8 +982,13 @@ class WindowManager {
     return required;
   }
 
-  startWindowsPushToTalk(key) {
-    if (!this._isOnboardingInputAllowed("dictation")) return;
+  startWindowsPushToTalk(key, inputKind = "dictation") {
+    if (
+      !this._isOnboardingInputAllowed(inputKind) ||
+      this._shouldBlockDictationInput(inputKind) ||
+      this.hotkeyManager.isInListeningMode()
+    )
+      return;
     if (this.winPushState?.active || this.isDictationProcessing()) {
       return;
     }
@@ -993,7 +998,7 @@ class WindowManager {
     const downTime = Date.now();
 
     this.showDictationPanel({ reposition: true });
-    this.sendPrepareDictation();
+    this.sendPrepareDictation({ inputKind });
 
     const safetyTimeoutId = setTimeout(() => {
       if (!this.winPushState || this.winPushState.downTime !== downTime) return;
@@ -1004,6 +1009,7 @@ class WindowManager {
     this.winPushState = {
       active: true,
       key,
+      inputKind,
       downTime,
       isRecording: false,
       safetyTimeoutId,
@@ -1016,7 +1022,7 @@ class WindowManager {
 
       if (!this.winPushState.isRecording) {
         this.winPushState.isRecording = true;
-        this.sendStartDictation();
+        this.sendStartDictation({ inputKind });
       }
     }, MIN_HOLD_DURATION_MS);
   }
@@ -1240,9 +1246,9 @@ class WindowManager {
     this.mainWindow.webContents.send("open-assistant-panel");
   }
 
-  sendStartDictation() {
-    if (!this._isOnboardingInputAllowed("dictation")) return;
-    if (this._shouldBlockDictationInput("dictation")) {
+  sendStartDictation({ inputKind = "dictation" } = {}) {
+    if (!this._isOnboardingInputAllowed(inputKind)) return;
+    if (this._shouldBlockDictationInput(inputKind)) {
       return;
     }
     if (this.hotkeyManager.isInListeningMode()) {
@@ -1255,7 +1261,7 @@ class WindowManager {
       const targetPidPromise = this.textEditMonitor?.captureTargetPid?.();
       void this.selectionManager?.captureTarget?.();
       this.showDictationPanel({ reposition: true, targetPidPromise });
-      this.mainWindow.webContents.send("start-dictation");
+      this.mainWindow.webContents.send("start-dictation", { inputKind });
     }
   }
 
@@ -1338,7 +1344,11 @@ class WindowManager {
     // push state machine makes duplicate backend and low-level phases harmless.
     const keys = this.hotkeyManager.isUsingNativeShortcut()
       ? activationMode === "push"
-        ? nativeListenerKeys.filter((key) => this.hotkeyManager.slotHasHotkey("dictation", key))
+        ? nativeListenerKeys.filter(
+            (key) =>
+              this.hotkeyManager.slotHasHotkey("dictation", key) ||
+              this.hotkeyManager.slotHasHotkey("voiceAgent", key)
+          )
         : []
       : nativeListenerKeys;
     if (process.platform === "win32" && this.windowsKeyManager) {

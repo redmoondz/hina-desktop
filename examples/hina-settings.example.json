@@ -1,0 +1,22 @@
+{
+  "format": "hina-desktop",
+  "version": 1,
+  "settings": {
+    "activationMode": "push",
+    "dictationKey": "F8",
+    "voiceAgentKey": "F9",
+    "preferredLanguage": "ru",
+    "uiLanguage": "en"
+  },
+  "connector": {
+    "url": "http://127.0.0.1:3210",
+    "transport": "wsl",
+    "controlUrl": "http://127.0.0.1:18789/",
+    "timeoutSeconds": 300
+  },
+  "speech": {
+    "enabled": true,
+    "language": "ru-RU",
+    "voice": "Microsoft Irina Desktop"
+  }
+}

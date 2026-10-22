@@ -29,6 +29,11 @@ const ipcMain = createLocalOnlyIpc(electronIpcMain);
 app.setName("Hina Desktop");
 const { hinaRequest } = require("./src/helpers/hinaConnector");
 ipcMain.handle("hina-connector-request", (_event, args) => hinaRequest(args));
+const hinaSpeech = require("./src/helpers/hinaSpeech").createHinaSpeech();
+ipcMain.handle("hina-speech-voices", () => hinaSpeech.list());
+ipcMain.handle("hina-speech-speak", (_event, args) => hinaSpeech.speak(args));
+ipcMain.handle("hina-speech-stop", () => hinaSpeech.stop());
+app.on("before-quit", () => hinaSpeech.stop());
 const tls = require("tls");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -636,7 +641,20 @@ async function startApp() {
   // agent, bypassing cleanup). Tap-only slots gate autorepeat like the
   // dictation toggle does.
   const isVoiceAgentPress = createHotkeyRepeatGate();
-  const voiceAgentHotkeyCallback = () => {
+  const voiceAgentHotkeyCallback = (key, phase) => {
+    if (
+      ["win32", "linux"].includes(process.platform) &&
+      windowManager.getActivationMode() === "push"
+    ) {
+      if (phase === "down")
+        windowManager.startWindowsPushToTalk(
+          key || hotkeyManager.getSlotHotkeys("voiceAgent")[0],
+          "assistant"
+        );
+      if (phase === "up") windowManager.handleWindowsPushKeyUp(key);
+      return;
+    }
+    if (process.platform === "win32" && windowsKeyManager?.isWatchingKey?.(key)) return;
     if (!isVoiceAgentPress()) return;
     windowManager.sendToggleVoiceAgent();
   };
@@ -1118,7 +1136,11 @@ async function startApp() {
         return;
       }
       if (hotkeyManager.slotHasHotkey("voiceAgent", key)) {
-        windowManager.sendToggleVoiceAgent();
+        if (windowManager.getActivationMode() === "push") {
+          windowManager.startWindowsPushToTalk(key, "assistant");
+        } else {
+          windowManager.sendToggleVoiceAgent();
+        }
       } else if (hotkeyManager.slotHasHotkey("translation", key)) {
         windowManager.sendToggleTranslation();
       } else if (hotkeyManager.slotHasHotkey("meeting", key)) {
@@ -1126,9 +1148,13 @@ async function startApp() {
       }
     };
 
-    // Only dictation drives push-to-talk, so only its key-up matters.
+    // Both recording slots need the physical release in push mode.
     const dispatchNativeKeyUp = (key) => {
-      if (!hotkeyManager.slotHasHotkey("dictation", key)) return;
+      if (
+        !hotkeyManager.slotHasHotkey("dictation", key) &&
+        !hotkeyManager.slotHasHotkey("voiceAgent", key)
+      )
+        return;
       if (windowManager.winPushState?.active) {
         windowManager.handleWindowsPushKeyUp(key);
       } else if (

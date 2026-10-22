@@ -77,11 +77,24 @@ function validateSettings(settings) {
   }
 }
 
-export function exportSettings(state, connector = {}) {
+export function exportSettings(state, connector = {}, speech = {}) {
   const settings = Object.fromEntries(
     keys.filter((key) => state[key] !== undefined).map((key) => [key, state[key]])
   );
-  return parseSettings(JSON.stringify({ format: "hina-desktop", version: 1, settings, connector }));
+  const portableConnector = Object.fromEntries(
+    ["url", "transport", "controlUrl", "timeoutSeconds"]
+      .filter((key) => connector[key] !== undefined)
+      .map((key) => [key, connector[key]])
+  );
+  return parseSettings(
+    JSON.stringify({
+      format: "hina-desktop",
+      version: 1,
+      settings,
+      connector: portableConnector,
+      speech,
+    })
+  );
 }
 
 export function parseSettings(text) {
@@ -90,7 +103,9 @@ export function parseSettings(text) {
   if (file?.format !== "hina-desktop" || file.version !== 1)
     throw new Error("Unsupported Hina settings format or version.");
   if (
-    Object.keys(file).some((key) => !["format", "version", "settings", "connector"].includes(key))
+    Object.keys(file).some(
+      (key) => !["format", "version", "settings", "connector", "speech"].includes(key)
+    )
   )
     throw new Error("Unsupported settings file field.");
   validateSettings(file.settings);
@@ -99,19 +114,90 @@ export function parseSettings(text) {
     !connector ||
     typeof connector !== "object" ||
     Array.isArray(connector) ||
-    Object.keys(connector).some((key) => !["transport", "controlUrl"].includes(key))
+    Object.keys(connector).some(
+      (key) => !["url", "token", "transport", "controlUrl", "timeoutSeconds"].includes(key)
+    )
   )
     throw new Error("Invalid Connector preferences.");
   if (connector.transport !== undefined && !["local", "wsl"].includes(connector.transport))
     throw new Error("Invalid Connector transport.");
   if (connector.controlUrl !== undefined) controlPanelUrl(connector.controlUrl);
-  return { format: "hina-desktop", version: 1, settings: file.settings, connector };
+  if (
+    connector.timeoutSeconds !== undefined &&
+    (!Number.isInteger(connector.timeoutSeconds) ||
+      connector.timeoutSeconds < 1 ||
+      connector.timeoutSeconds > 3600)
+  )
+    throw new Error("Choose an agent timeout between 1 and 3600 seconds.");
+  if (connector.url !== undefined) validateSettings({ dictationAgentRemoteUrl: connector.url });
+  if (
+    connector.token !== undefined &&
+    (typeof connector.token !== "string" ||
+      !connector.token ||
+      /\s/.test(connector.token) ||
+      connector.token.length > 4096)
+  )
+    throw new Error("Invalid Connector bearer token.");
+  if (
+    connector.url &&
+    file.settings.dictationAgentRemoteUrl &&
+    connector.url !== file.settings.dictationAgentRemoteUrl
+  )
+    throw new Error("Connector addresses must match.");
+  const speech = file.speech ?? {};
+  if (
+    !speech ||
+    typeof speech !== "object" ||
+    Array.isArray(speech) ||
+    Object.keys(speech).some((key) => !["enabled", "language", "voice"].includes(key)) ||
+    (speech.enabled !== undefined && typeof speech.enabled !== "boolean") ||
+    (speech.language !== undefined &&
+      (typeof speech.language !== "string" ||
+        !/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(speech.language))) ||
+    (speech.voice !== undefined && (typeof speech.voice !== "string" || speech.voice.length > 512))
+  )
+    throw new Error("Invalid speech preferences.");
+  return { format: "hina-desktop", version: 1, settings: file.settings, connector, speech };
 }
 
-export async function applySettings(file, store, storage) {
+export async function checkConnection({ url, token, transport }, api) {
+  const key = token || (await api.getDictationAgentCustomKey?.()) || "";
+  const result = await api.hinaConnectorRequest({ url, token: key, transport, check: true });
+  if (!result.ok) throw new Error(result.error || "Cannot connect to Hina.");
+  return key;
+}
+
+export async function saveConnection({ url, token, transport }, store, storage, api) {
+  const saved = await api.saveDictationAgentCustomKey(token);
+  if (saved?.success === false) throw new Error("Could not save Connector credentials.");
+  store.setDictationAgentCustomApiKey(token);
+  enableConnection({ url, transport }, store, storage);
+}
+
+export function enableConnection({ url, transport }, store, storage) {
+  store.setDictationAgentRemoteUrl(url);
+  store.setDictationAgentModel("hina");
+  store.setDictationAgentMode("self-hosted");
+  store.setUseDictationAgent(true);
+  storage.setItem("hinaConnectorTransport", transport);
+  storage.setItem("hinaConnectorEnabled", "true");
+}
+
+export async function applySettings(file, store, storage, api) {
   // Validate the complete document before the first mutation.
   const parsed = parseSettings(JSON.stringify({ format: "hina-desktop", version: 1, ...file }));
   const settings = parsed.settings;
+  const shouldConnect = parsed.connector.url !== undefined || parsed.connector.token !== undefined;
+  const connection = {
+    url:
+      parsed.connector.url ||
+      settings.dictationAgentRemoteUrl ||
+      store.dictationAgentRemoteUrl ||
+      "http://127.0.0.1:3210",
+    transport: parsed.connector.transport || storage.getItem?.("hinaConnectorTransport") || "local",
+    token: parsed.connector.token,
+  };
+  if (shouldConnect) connection.token = await checkConnection(connection, api);
   const destinationChanged =
     (settings.dictationAgentRemoteUrl !== undefined &&
       settings.dictationAgentRemoteUrl !== store.dictationAgentRemoteUrl) ||
@@ -139,4 +225,10 @@ export async function applySettings(file, store, storage) {
   if (parsed.connector.controlUrl) storage.setItem("hinaControlUrl", parsed.connector.controlUrl);
   if (destinationChanged && storage.getItem?.("hinaConnectorEnabled") === "true")
     storage.setItem("hinaConnectorEnabled", "false");
+  if (shouldConnect) await saveConnection(connection, store, storage, api);
+  if (parsed.connector.timeoutSeconds !== undefined)
+    storage.setItem("hinaConnectorTimeoutSeconds", String(parsed.connector.timeoutSeconds));
+  for (const [key, value] of Object.entries(parsed.speech))
+    storage.setItem(`hinaSpeech${key[0].toUpperCase()}${key.slice(1)}`, String(value));
+  return { connected: shouldConnect };
 }

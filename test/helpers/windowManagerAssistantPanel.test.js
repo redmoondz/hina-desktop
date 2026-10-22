@@ -252,6 +252,41 @@ function makeManager(windowState) {
   return { manager, calls: fake.calls };
 }
 
+test("assistant push-to-talk starts once after hold and only its own release stops it", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  const { manager } = makeManager({ visible: true });
+  const events = [];
+  manager.showDictationPanel = () => undefined;
+  manager.sendPrepareDictation = (options) => events.push(["prepare", options.inputKind]);
+  manager.sendStartDictation = (options) => events.push(["start", options.inputKind]);
+  manager.sendStopDictation = () => events.push(["stop"]);
+  manager.hotkeyManager.isInListeningMode = () => false;
+  manager.startWindowsPushToTalk("F9", "assistant");
+  manager.startWindowsPushToTalk("F9", "assistant");
+  t.mock.timers.tick(150);
+  manager.handleWindowsPushKeyUp("F8");
+  assert.equal(manager.winPushState.active, true);
+  manager.handleWindowsPushKeyUp("F9");
+  manager.handleWindowsPushKeyUp("F9");
+  assert.deepEqual(events, [["prepare", "assistant"], ["start", "assistant"], ["stop"]]);
+});
+
+test("releasing assistant before the hold threshold cancels without a command", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"] });
+  const { manager } = makeManager({ visible: true });
+  const events = [];
+  manager.showDictationPanel = () => undefined;
+  manager.hideDictationPanel = () => events.push("hide");
+  manager.sendPrepareDictation = () => undefined;
+  manager.sendCancelDictationPreparation = () => events.push("cancel");
+  manager.sendStartDictation = () => assert.fail("Short presses must not record");
+  manager.hotkeyManager.isInListeningMode = () => false;
+  manager.startWindowsPushToTalk("F9", "assistant");
+  manager.handleWindowsPushKeyUp("F9");
+  t.mock.timers.tick(200);
+  assert.deepEqual(events, ["cancel", "hide"]);
+});
+
 test("the Assistant response context menu exposes native Copy only for selected text", () => {
   builtMenus.length = 0;
   const manager = new WindowManager();

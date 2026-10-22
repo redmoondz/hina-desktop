@@ -890,6 +890,7 @@ class ReasoningService extends BaseReasoningService {
           url: route.baseUrl,
           token: token || route.apiKey,
           text,
+          timeoutSeconds: Number(localStorage.getItem("hinaConnectorTimeoutSeconds") || 300),
           ...(localStorage.getItem("hinaConnectorTransport") === "wsl"
             ? { transport: "wsl" as const }
             : {}),

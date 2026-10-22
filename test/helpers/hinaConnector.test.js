@@ -2,6 +2,28 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { hinaRequest, connectorBase } = require("../../src/helpers/hinaConnector");
 
+test("agent wait defaults to five minutes and transports allow an extra thirty seconds", async (t) => {
+  const deadlines = [];
+  t.mock.method(AbortSignal, "timeout", (ms) => {
+    deadlines.push(ms);
+    return new AbortController().signal;
+  });
+  const result = await hinaRequest(
+    { url: "http://localhost:3210", token: "test", text: "Inspect GPU and containers" },
+    async () => new Response(JSON.stringify({ choices: [{ message: { content: "Done" } }] }))
+  );
+  assert.equal(result.ok, true);
+  assert.equal(deadlines[0], 330000);
+  await hinaRequest(
+    { url: "http://localhost:3210", token: "test", text: "Long command", timeoutSeconds: 900 },
+    async (_url, options) => {
+      assert.equal(JSON.parse(options.body).timeoutSeconds, 900);
+      return new Response(JSON.stringify({ choices: [{ message: { content: "Done" } }] }));
+    }
+  );
+  assert.equal(deadlines[1], 930000);
+});
+
 test("WSL requests stop their curl process when the connection deadline expires", async (t) => {
   const processApi = require("node:child_process");
   const execFile = processApi.execFile;

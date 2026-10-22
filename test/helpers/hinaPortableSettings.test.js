@@ -3,6 +3,93 @@ const assert = require("node:assert/strict");
 
 const load = () => require("../../src/helpers/hinaPortableSettings");
 
+test("custom agent timeout is portable and invalid values are rejected before writes", async () => {
+  const { applySettings, exportSettings, parseSettings } = load();
+  const file = exportSettings({}, { timeoutSeconds: 900 });
+  const storage = new Map();
+  await applySettings(file, {}, { setItem: (key, value) => storage.set(key, value) });
+  assert.equal(storage.get("hinaConnectorTimeoutSeconds"), "900");
+  for (const timeoutSeconds of [0, -1, 1.5, 3601, "300", null])
+    assert.throws(() =>
+      parseSettings(
+        JSON.stringify({
+          format: "hina-desktop",
+          version: 1,
+          settings: {},
+          connector: { timeoutSeconds },
+        })
+      )
+    );
+});
+
+test("speech language and Windows voice round trip through JSON without installing voices", async () => {
+  const { applySettings, exportSettings } = load();
+  const speech = { enabled: true, language: "en-US", voice: "Microsoft David Desktop" };
+  const file = exportSettings({}, {}, speech);
+  const storage = new Map();
+  await applySettings(file, {}, { setItem: (key, value) => storage.set(key, value) });
+  assert.equal(storage.get("hinaSpeechLanguage"), "en-US");
+  assert.equal(storage.get("hinaSpeechVoice"), "Microsoft David Desktop");
+  assert.equal(storage.get("hinaSpeechEnabled"), "true");
+});
+
+test("connection JSON authenticates before applying and never exports its token", async () => {
+  const { applySettings, exportSettings, parseSettings } = load();
+  const connector = { url: "http://localhost:3210", token: "test-token", transport: "local" };
+  const config = parseSettings(
+    JSON.stringify({ format: "hina-desktop", version: 1, settings: {}, connector })
+  );
+  const changes = [];
+  const storage = new Map();
+  const store = Object.fromEntries(
+    [
+      "DictationAgentRemoteUrl",
+      "DictationAgentModel",
+      "DictationAgentMode",
+      "UseDictationAgent",
+      "DictationAgentCustomApiKey",
+    ].map((key) => [`set${key}`, (value) => changes.push([key, value])])
+  );
+  const api = {
+    hinaConnectorRequest: async (args) => {
+      assert.equal(args.check, true);
+      return { ok: true };
+    },
+    saveDictationAgentCustomKey: async (token) => changes.push(["saved", token]),
+  };
+  await applySettings(config, store, { setItem: (key, value) => storage.set(key, value) }, api);
+  assert.equal(storage.get("hinaConnectorEnabled"), "true");
+  assert.ok(
+    changes.some(([key, value]) => key === "DictationAgentRemoteUrl" && value === connector.url)
+  );
+  assert.ok(changes.some(([key, value]) => key === "saved" && value === connector.token));
+  assert.ok(!JSON.stringify(exportSettings({}, connector)).includes("test-token"));
+  changes.length = 0;
+  api.hinaConnectorRequest = async () => ({ ok: false, error: "Unauthorized" });
+  await assert.rejects(
+    applySettings(
+      config,
+      store,
+      {
+        setItem() {
+          assert.fail("No writes before authentication");
+        },
+      },
+      api
+    ),
+    /Unauthorized/
+  );
+  assert.deepEqual(changes, []);
+});
+
+test("connection JSON rejects invalid credentials and ambiguous addresses", () => {
+  const { parseSettings } = load();
+  for (const connector of [{ token: "bad\nvalue" }, { url: "https://example.com" }, { token: 42 }])
+    assert.throws(() =>
+      parseSettings(JSON.stringify({ format: "hina-desktop", version: 1, settings: {}, connector }))
+    );
+});
+
 test("portable settings round trip includes preferences but excludes secrets and session state", () => {
   const { exportSettings, parseSettings } = load();
   const file = exportSettings(

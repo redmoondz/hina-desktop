@@ -1,4 +1,5 @@
 import { memo, useState } from "react";
+import { HinaWaitingStatus } from "./HinaWaitingStatus";
 import { useTranslation } from "react-i18next";
 import {
   Copy,
@@ -289,11 +290,16 @@ export const ChatMessage = memo(function ChatMessage({
           />
         )}
 
-        {isStreaming && !hasContent && !hasToolCalls && (
-          <span className="text-[13px] font-medium select-none thinking-shimmer-text">
-            {t("agentMode.input.thinking")}...
-          </span>
-        )}
+        {isStreaming &&
+          !hasContent &&
+          !hasToolCalls &&
+          (window.electronAPI?.localOnly ? (
+            <HinaWaitingStatus />
+          ) : (
+            <span className="text-[13px] font-medium select-none thinking-shimmer-text">
+              {t("agentMode.input.thinking")}...
+            </span>
+          ))}
 
         {error?.settingsTarget && (
           <button

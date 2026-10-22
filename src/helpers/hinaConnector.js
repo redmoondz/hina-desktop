@@ -14,7 +14,7 @@ function connectorBase(value) {
   return url.origin;
 }
 
-async function hinaRequest(args, fetcher = fetch) {
+async function hinaRequest(args, fetcher = localFetch) {
   let phase = "address";
   try {
     if (args?.transport === "wsl") {
@@ -23,12 +23,16 @@ async function hinaRequest(args, fetcher = fetch) {
       fetcher = wslFetch;
     }
     const base = connectorBase(args?.url);
+    const timeoutSeconds = args.timeoutSeconds ?? 300;
+    if (!Number.isInteger(timeoutSeconds) || timeoutSeconds < 1 || timeoutSeconds > 3600)
+      return { ok: false, error: "Choose an agent timeout between 1 and 3600 seconds." };
     if (typeof args.token !== "string" || !args.token || /\s/.test(args.token)) {
       return { ok: false, error: "Enter the Connector bearer token" };
     }
     const options = {
       headers: { Authorization: `Bearer ${args.token}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(args.check === true ? 10000 : 120000),
+      signal: AbortSignal.timeout(args.check === true ? 10000 : (timeoutSeconds + 30) * 1000),
+      timeoutSeconds: timeoutSeconds + 30,
       redirect: "error",
     };
     if (args.check === true) {
@@ -62,8 +66,14 @@ async function hinaRequest(args, fetcher = fetch) {
         model: "hina",
         messages: [{ role: "user", content: args.text }],
         stream: false,
+        timeoutSeconds,
       }),
     });
+    if (response.status === 504)
+      return {
+        ok: false,
+        error: `Hina reached the configured wait limit (${timeoutSeconds} seconds). Increase Agent timeout in Desktop settings for longer tasks. Check the agent session before repeating the command.`,
+      };
     if (!response.ok)
       return { ok: false, error: `Hina Connector returned HTTP ${response.status}` };
     const reply = (await response.json()).choices?.[0]?.message?.content;
@@ -80,10 +90,43 @@ async function hinaRequest(args, fetcher = fetch) {
       ok: false,
       error:
         phase === "command"
-          ? "Hina Connector is unavailable or timed out. Check its URL and service."
+          ? "Connection to Hina was lost or the configured wait expired. The agent may still be running; check its session before repeating the command."
           : "Cannot reach Hina Connector. Start its service and check the address. On Windows, choose WSL transport if Connector runs inside WSL; the default distribution must contain curl.",
     };
   }
+}
+
+// Native HTTP follows the caller's deadline. Node fetch has a separate default
+// header timeout that would cut off a quiet long-running agent after 5 minutes.
+function localFetch(url, options) {
+  const { request } = require("node:http");
+  return new Promise((resolve, reject) => {
+    const outgoing = request(
+      url,
+      { method: options.method || "GET", headers: options.headers, signal: options.signal },
+      (incoming) => {
+        const chunks = [];
+        let size = 0;
+        incoming.on("data", (chunk) => {
+          size += chunk.length;
+          if (size > 4 * 1024 * 1024)
+            outgoing.destroy(new Error("Connector response exceeds 4 MB"));
+          else chunks.push(chunk);
+        });
+        incoming.on("error", reject);
+        incoming.on("end", () => {
+          const status = incoming.statusCode || 502;
+          resolve(
+            new Response([204, 205, 304].includes(status) ? null : Buffer.concat(chunks), {
+              status,
+            })
+          );
+        });
+      }
+    );
+    outgoing.on("error", reject);
+    outgoing.end(options.body);
+  });
 }
 
 // WSL localhost and Windows localhost are separate on some WSL networking
@@ -101,11 +144,16 @@ function wslFetch(url, options) {
         "--silent",
         "--show-error",
         "--max-time",
-        "120",
+        String(options.timeoutSeconds || 330),
         "--write-out",
         "\\n%{http_code}",
       ],
-      { timeout: 125000, signal: options.signal, maxBuffer: 1024 * 1024, windowsHide: true },
+      {
+        timeout: ((options.timeoutSeconds || 330) + 5) * 1000,
+        signal: options.signal,
+        maxBuffer: 1024 * 1024,
+        windowsHide: true,
+      },
       (error, stdout) => {
         if (error) {
           reject(new Error("WSL Connector request failed"));

@@ -3,6 +3,20 @@ const assert = require("node:assert/strict");
 
 const load = () => import("../../src/components/dictation/assistantCommandOptions.ts");
 
+test("a voice-only answer is spoken once without clipboard delivery", async () => {
+  const { buildAssistantCommandSendOptions } = await load();
+  const h = handlers();
+  const spoken = [];
+  h.value.speak = (content) => spoken.push(content);
+  const built = buildAssistantCommandSendOptions(
+    { attachment: null, selectedContext: null, delivery: null },
+    h.value
+  );
+  await built.options.onComplete({ assistantId: "a", content: "Hello Hina" });
+  assert.deepEqual(spoken, ["Hello Hina"]);
+  assert.deepEqual(h.calls.delivered, []);
+});
+
 const PASTE = {
   mode: "paste",
   sessionId: "s",

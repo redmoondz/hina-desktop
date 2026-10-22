@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Check, Copy, Plus, X } from "../icons";
 import { BrandMarkIcon } from "./BrandMarkIcon";
 import { HelpEvidence } from "../chat/GroundedHelpEvidence";
+import { HinaWaitingStatus } from "../chat/HinaWaitingStatus";
 import { extractHelpEvidence } from "../chat/helpEvidence";
 import { helpAnswerPlainText } from "../chat/helpEvidenceText";
 import { MarkdownRenderer } from "../ui/MarkdownRenderer";
@@ -229,6 +230,28 @@ export function AssistantPanel({
       pendingCommand,
       {
         onResponseContent,
+        speak:
+          window.electronAPI.localOnly && localStorage.getItem("hinaSpeechEnabled") !== "false"
+            ? (content) => {
+                void window.electronAPI
+                  .hinaSpeechSpeak({
+                    text: content,
+                    language: localStorage.getItem("hinaSpeechLanguage") || "ru-RU",
+                    voice: localStorage.getItem("hinaSpeechVoice") || undefined,
+                  })
+                  .then((result) => {
+                    if (!result.ok)
+                      toast({
+                        title: t("hinaSettings.speechFailed"),
+                        description: result.error,
+                        variant: "destructive",
+                      });
+                  })
+                  .catch(() =>
+                    toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" })
+                  );
+              }
+            : undefined,
         deliver: deliverAssistantResponse,
         confirmCopied: (content) => confirmCopied(content, AUTO_COPY_FEEDBACK_MS),
       }
@@ -274,6 +297,7 @@ export function AssistantPanel({
     onCommandDiscarded,
     onCommandSettled,
     onSelectionContextChange,
+    toast,
     onResponseContent,
     confirmCopied,
     sendMessage,
@@ -583,6 +607,11 @@ export function AssistantPanel({
           </div>
         </main>
 
+        {window.electronAPI.localOnly && (thinking || isBusy) && (
+          <div className="px-4 py-2">
+            <HinaWaitingStatus />
+          </div>
+        )}
         <ChatInput
           agentState={historyReady && !submissionInFlight ? streaming.agentState : "thinking"}
           partialTranscript=""

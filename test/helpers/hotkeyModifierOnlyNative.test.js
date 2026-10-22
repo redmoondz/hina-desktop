@@ -35,6 +35,13 @@ const setPlatform = (value) =>
   Object.defineProperty(process, "platform", { value, configurable: true });
 
 test.beforeEach(() => registered.clear());
+test("push mode watches the assistant key release as well as dictation", async () => {
+  setPlatform("win32");
+  const manager = new HotkeyManager();
+  await manager.registerSlot("dictation", "F8", noop);
+  await manager.registerSlot("voiceAgent", "F9", noop);
+  assert.deepEqual(manager.getNativeListenerKeys("push"), ["F8", "F9"]);
+});
 test.after(() => Object.defineProperty(process, "platform", originalPlatform));
 
 for (const platform of ["win32", "linux"]) {

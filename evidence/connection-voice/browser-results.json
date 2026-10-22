@@ -1,0 +1,62 @@
+{
+  "bridge": "simulated Electron API; real built renderer",
+  "results": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "overflow": false,
+      "export": true,
+      "import": true,
+      "toggles": true,
+      "invalidImport": true,
+      "openControl": true,
+      "connectionImport": true,
+      "speechSelection": true,
+      "restartCheck": true,
+      "configurableTimeout": true
+    },
+    {
+      "width": 1280,
+      "theme": "dark",
+      "overflow": false,
+      "export": true,
+      "import": true,
+      "toggles": true,
+      "invalidImport": true,
+      "openControl": true,
+      "connectionImport": true,
+      "speechSelection": true,
+      "restartCheck": true,
+      "configurableTimeout": true
+    },
+    {
+      "width": 390,
+      "theme": "light",
+      "overflow": false,
+      "export": true,
+      "import": true,
+      "toggles": true,
+      "invalidImport": true,
+      "openControl": true,
+      "connectionImport": true,
+      "speechSelection": true,
+      "restartCheck": true,
+      "configurableTimeout": true
+    },
+    {
+      "width": 390,
+      "theme": "dark",
+      "overflow": false,
+      "export": true,
+      "import": true,
+      "toggles": true,
+      "invalidImport": true,
+      "openControl": true,
+      "connectionImport": true,
+      "speechSelection": true,
+      "restartCheck": true,
+      "configurableTimeout": true
+    }
+  ],
+  "errors": []
+}

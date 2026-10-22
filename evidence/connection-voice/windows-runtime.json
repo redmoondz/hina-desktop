@@ -1,0 +1,30 @@
+{
+  "packagedRuntime": true,
+  "defaultTimeoutSeconds": 300,
+  "windowsVoices": [
+    {
+      "language": "en-US",
+      "name": "Microsoft David Desktop",
+      "id": "Microsoft David Desktop"
+    },
+    {
+      "language": "en-US",
+      "name": "Microsoft Zira Desktop",
+      "id": "Microsoft Zira Desktop"
+    },
+    {
+      "language": "ru-RU",
+      "name": "Microsoft Irina Desktop",
+      "id": "Microsoft Irina Desktop"
+    }
+  ],
+  "connectorAuthentication": true,
+  "transport": "wsl",
+  "agentTurnSent": false,
+  "screenshots": [
+    "windows-1280-connection.png",
+    "windows-1280-speech.png",
+    "windows-390-connection.png",
+    "windows-390-speech.png"
+  ]
+}

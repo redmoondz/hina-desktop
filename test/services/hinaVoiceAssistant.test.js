@@ -88,7 +88,7 @@ test("Voice Assistant reaches Hina through IPC even when local tools are offered
   ))
     chunks.push(chunk);
   assert.deepEqual(calls, [
-    { url: "http://127.0.0.1:3210", token: "saved-token", text: "Hello Hina" },
+    { url: "http://127.0.0.1:3210", token: "saved-token", text: "Hello Hina", timeoutSeconds: 300 },
   ]);
   assert.deepEqual(chunks, [
     { type: "content", text: "HINA_CONNECTION_OK" },

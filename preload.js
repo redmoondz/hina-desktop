@@ -65,6 +65,9 @@ const registerListener = (channel, handlerFactory) => {
 contextBridge.exposeInMainWorld("electronAPI", {
   localOnly: true,
   hinaConnectorRequest: (args) => ipcRenderer.invoke("hina-connector-request", args),
+  hinaSpeechVoices: () => ipcRenderer.invoke("hina-speech-voices"),
+  hinaSpeechSpeak: (args) => ipcRenderer.invoke("hina-speech-speak", args),
+  hinaSpeechStop: () => ipcRenderer.invoke("hina-speech-stop"),
   setOnboardingWindowMode: (mode) => ipcRenderer.invoke("onboarding-set-window-mode", mode),
   setOnboardingActive: (active) => ipcRenderer.invoke("onboarding-set-active", active),
   openPermissionGuide: (state) => ipcRenderer.invoke("permission-guide-open", state),
@@ -108,7 +111,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onToggleVoiceAgent: registerListener("toggle-voice-agent", (callback) => () => callback()),
   onToggleTranslation: registerListener("toggle-translation", (callback) => () => callback()),
   onOpenAssistantPanel: registerListener("open-assistant-panel", (callback) => () => callback()),
-  onStartDictation: registerListener("start-dictation", (callback) => () => callback()),
+  onStartDictation: registerListener(
+    "start-dictation",
+    (callback) => (_event, options) => callback(options)
+  ),
   onStopDictation: registerListener("stop-dictation", (callback) => () => callback()),
   onPrepareDictation: registerListener(
     "prepare-dictation",

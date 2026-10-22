@@ -159,6 +159,7 @@ export const useAudioRecording = (toast, options = {}) => {
         }
 
         if (!canStartDictation(audioManagerRef.current.getState())) return false;
+        void window.electronAPI.hinaSpeechStop?.();
 
         const assistantSelectionContext = voiceAgentRequested
           ? (getAssistantSelectionContextRef.current?.() ?? null)
@@ -704,14 +705,16 @@ export const useAudioRecording = (toast, options = {}) => {
               onAssistantCommandRef.current?.({
                 ...command,
                 selectedContext: selectedContext ?? null,
-                delivery: createAssistantResponseDelivery({
-                  autoPasteEnabled,
-                  deliverySessionId,
-                  acceptsMarkdown: deliveryAcceptsMarkdown,
-                  appCategory: deliveryAppCategory,
-                  restoreClipboard: !keepTranscriptionInClipboard,
-                  allowClipboardFallback: isAccessibilitySkipped(),
-                }),
+                delivery: window.electronAPI?.localOnly
+                  ? null
+                  : createAssistantResponseDelivery({
+                      autoPasteEnabled,
+                      deliverySessionId,
+                      acceptsMarkdown: deliveryAcceptsMarkdown,
+                      appCategory: deliveryAppCategory,
+                      restoreClipboard: !keepTranscriptionInClipboard,
+                      allowClipboardFallback: isAccessibilitySkipped(),
+                    }),
               });
             }
           } else {
@@ -1050,8 +1053,8 @@ export const useAudioRecording = (toast, options = {}) => {
       }
     };
 
-    const handleStart = async () => {
-      await performStartRecording();
+    const handleStart = async (options) => {
+      await performStartRecording({ voiceAgentRequested: options?.inputKind === "assistant" });
     };
 
     const handleStop = async () => {
@@ -1073,8 +1076,8 @@ export const useAudioRecording = (toast, options = {}) => {
       onToggle?.();
     });
 
-    const disposeStart = window.electronAPI.onStartDictation?.(() => {
-      handleStart();
+    const disposeStart = window.electronAPI.onStartDictation?.((options) => {
+      handleStart(options);
       onToggle?.();
     });
 

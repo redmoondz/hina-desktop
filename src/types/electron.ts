@@ -1338,12 +1338,24 @@ declare global {
   interface Window {
     electronAPI: {
       readonly localOnly?: boolean;
+      hinaSpeechVoices: () => Promise<{
+        ok: boolean;
+        voices?: { id: string; name: string; language: string }[];
+        error?: string;
+      }>;
+      hinaSpeechSpeak: (args: {
+        text: string;
+        language: string;
+        voice?: string;
+      }) => Promise<{ ok: boolean; error?: string }>;
+      hinaSpeechStop: () => Promise<{ ok: boolean }>;
       hinaConnectorRequest: (args: {
         url: string;
         token: string;
         text?: string;
         check?: boolean;
         transport?: "local" | "wsl";
+        timeoutSeconds?: number;
       }) => Promise<{ ok: boolean; reply?: string; error?: string }>;
       // Basic window operations
       setOnboardingWindowMode?: (mode: "compact" | "expanded" | "restore") => Promise<boolean>;
@@ -1466,7 +1478,7 @@ declare global {
       onToggleVoiceAgent?: (callback: () => void) => () => void;
       onToggleTranslation?: (callback: () => void) => () => void;
       onOpenAssistantPanel?: (callback: () => void) => () => void;
-      onStartDictation?: (callback: () => void) => () => void;
+      onStartDictation?: (callback: (options?: { inputKind?: string }) => void) => () => void;
       onStopDictation?: (callback: () => void) => () => void;
       onPrepareDictation?: (
         callback: (options?: { inputKind?: "dictation" | "assistant" | "translation" }) => void

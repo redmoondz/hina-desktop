@@ -17,6 +17,7 @@ interface CommandHandlers {
     content: string
   ) => Promise<{ pasted: boolean; copied: boolean }>;
   confirmCopied: (content: string) => void;
+  speak?: (content: string) => void;
 }
 
 const PANEL_DELIVERY: AssistantResponseDelivery = { mode: "clipboard" };
@@ -54,17 +55,20 @@ export function buildAssistantCommandSendOptions(
       destinationAppCategory: delivery?.mode === "paste" ? delivery.appCategory : undefined,
       onApprovalRequested: () => holdInPanel(),
       onHoldDelivery: holdInPanel,
-      onComplete: delivery
-        ? async ({ content }) => {
-            const keepsClipboard =
-              clipboardPreserved ||
-              (pasteHeld && delivery.mode === "paste" && delivery.restoreClipboard);
-            if (keepsClipboard) return;
-            const result = await handlers.deliver(pasteHeld ? PANEL_DELIVERY : delivery, content);
-            delivered = result.pasted;
-            if (result.copied) handlers.confirmCopied(content);
-          }
-        : undefined,
+      onComplete:
+        delivery || handlers.speak
+          ? async ({ content }) => {
+              handlers.speak?.(content);
+              if (!delivery) return;
+              const keepsClipboard =
+                clipboardPreserved ||
+                (pasteHeld && delivery.mode === "paste" && delivery.restoreClipboard);
+              if (keepsClipboard) return;
+              const result = await handlers.deliver(pasteHeld ? PANEL_DELIVERY : delivery, content);
+              delivered = result.pasted;
+              if (result.copied) handlers.confirmCopied(content);
+            }
+          : undefined,
     },
     wasDelivered: () => delivered,
   };

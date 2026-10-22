@@ -4,6 +4,7 @@ import { useSettingsStore } from "../stores/settingsStore";
 import LocalWhisperPicker from "./LocalWhisperPicker";
 import HinaConnectorSettings from "./settings/HinaConnectorSettings";
 import HinaConfigSettings from "./settings/HinaConfigSettings";
+import HinaSpeechSettings from "./settings/HinaSpeechSettings";
 import HinaGpuSettings from "./settings/HinaGpuSettings";
 import HinaDictationStats from "./settings/HinaDictationStats";
 import { Toggle } from "./ui/toggle";
@@ -13,6 +14,7 @@ import { Button } from "./ui/button";
 import LanguageSelector from "./ui/LanguageSelector";
 import TitleBar from "./TitleBar";
 import logo from "../assets/icon.png";
+import { SUPPORTED_UI_LANGUAGES, type UiLanguage } from "../i18n";
 
 function SettingsCard({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -58,6 +60,8 @@ export default function HinaSettings() {
           <h1 className="text-2xl font-semibold tracking-tight">{t("hinaSettings.title")}</h1>
           <p className="text-sm text-muted-foreground">{t("hinaSettings.description")}</p>
         </header>
+
+        <HinaConnectorSettings />
 
         <SettingsCard title={t("hinaSettings.shortcuts")}>
           <p className="text-xs text-muted-foreground">{t("hinaSettings.shortcutsDescription")}</p>
@@ -128,11 +132,26 @@ export default function HinaSettings() {
           <HinaGpuSettings />
         </SettingsCard>
 
-        <HinaConnectorSettings />
+        <HinaSpeechSettings />
         <HinaDictationStats />
         <HinaConfigSettings />
 
         <SettingsCard title={t("hinaSettings.preferences")}>
+          <label className="flex flex-wrap items-center justify-between gap-3 text-sm">
+            {t("hinaSettings.interfaceLanguage")}
+            <select
+              aria-label={t("hinaSettings.interfaceLanguage")}
+              className="rounded-md border border-border bg-background p-2"
+              value={settings.uiLanguage}
+              onChange={(event) => settings.setUiLanguage(event.target.value as UiLanguage)}
+            >
+              {SUPPORTED_UI_LANGUAGES.map((language) => (
+                <option key={language} value={language}>
+                  {new Intl.DisplayNames(["en"], { type: "language" }).of(language)}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="flex items-center justify-between gap-4 text-sm">
             <span className="space-y-1">
               <span className="block">Pause media while recording</span>

@@ -467,8 +467,8 @@ class HotkeyManager extends EventEmitter {
    * instead of globalShortcut. Modifier-only and right-side-modifier combos never
    * register through globalShortcut. Windows dictation also watches regular keys
    * to distinguish rapid taps from autorepeat; push-to-talk needs key releases.
-   * Only the dictation slot supports push-to-talk;
-   * every other slot is tap-to-toggle. Globe/mouse hotkeys are macOS-only.
+   * Dictation and assistant slots support push-to-talk on Windows/Linux.
+   * Other slots are tap-to-toggle. Globe/mouse hotkeys are macOS-only.
    * Each slot may bind several hotkeys, so we evaluate every one.
    */
   getNativeListenerKeys(activationMode) {
@@ -476,7 +476,8 @@ class HotkeyManager extends EventEmitter {
     for (const [slotName, slot] of this.slots) {
       for (const hotkey of slot.hotkeys ?? []) {
         if (!hotkey || isGlobeLikeHotkey(hotkey) || isMouseButtonHotkey(hotkey)) continue;
-        const pushToTalk = slotName === "dictation" && activationMode === "push";
+        const pushToTalk =
+          ["dictation", "voiceAgent"].includes(slotName) && activationMode === "push";
         const windowsTap =
           process.platform === "win32" &&
           slotName === "dictation" &&

@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-22",
+  "windowsBuild": "C:\\Users\\siriu\\projects\\hina-desktop\\builds\\voice-connection-uq5lnnuu\\dist\\win-unpacked",
+  "checks": {
+    "connectorTests": 217,
+    "desktopFocusedTests": 113,
+    "desktopQualityCheck": "passed",
+    "rendererBuild": "passed",
+    "windowsPackaging": "passed after rebuilding with complete known working runtime dependencies",
+    "packagedRuntime": "passed",
+    "liveConnectorAuthentication": "passed; no agent turn sent",
+    "windowsSpeech": "3 installed voices enumerated and Microsoft Irina playback completed",
+    "browser": "1280 and 390 pixels, light and dark, zero console errors",
+    "waitingIndicator": "real component stayed pending after browser clock advanced 121 seconds"
+  },
+  "limits": [
+    "Physical microphone and global assistant shortcut were not exercised end to end.",
+    "The full upstream suite reported three failures during execution and stalled; it was stopped. The changed scenarios passed separately.",
+    "Windows System.Speech exposes compatible installed voices; Narrator-only or online voices may be absent.",
+    "The production application was left running; launch the new executable after quitting the old application."
+  ],
+  "artifacts": {
+    "Hina Desktop.exe": {
+      "bytes": 223797248,
+      "sha256": "156ea37bd9b843e368c829cde1430561efbca0dbca47a90d5879e50f733cdb23"
+    },
+    "resources/app.asar": {
+      "bytes": 82524403,
+      "sha256": "82a85f968b6b0b4c9cb658c5ba4c57c36e1120245d8fc43dc628290bfebc8a69"
+    }
+  }
+}
