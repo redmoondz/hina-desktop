@@ -1,0 +1,11 @@
+{
+  "installedVersion": "0.3.0",
+  "mediaSwitch": true,
+  "clipboardSwitch": true,
+  "jsonExport": true,
+  "connector": {
+    "configured": true,
+    "ok": true
+  },
+  "pageErrors": []
+}

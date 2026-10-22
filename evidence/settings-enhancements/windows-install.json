@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "55ad014",
+  "version": "0.3.0",
+  "platform": "win32-x64",
+  "windowsNodeVersion": "24.22.1",
+  "electronVersion": "41.10.7",
+  "windowsFocusedTests": { "passed": 51, "failed": 0 },
+  "typecheck": "passed",
+  "packagedDependencies": { "sqlite": "passed", "updater": "passed", "connector": "passed" },
+  "installerFile": "Hina Desktop Setup 0.3.0.exe",
+  "installerBytes": 178212932,
+  "installerSha256": "adf9d3833f11ea3d5630a61872d92a67ff720fbbf57541e4e6b4a254ee04b467",
+  "installedPath": "%LOCALAPPDATA%\\Programs\\Hina Desktop",
+  "rollbackPath": "%LOCALAPPDATA%\\Programs\\Hina Desktop.backup-0.2.0-55ad014",
+  "profilePreserved": true,
+  "savedConnectorCheck": "passed",
+  "agentTurnsSent": 0,
+  "restartedWithoutDebugPort": true,
+  "published": false,
+  "interactiveMicrophoneAcceptance": "not performed"
+}

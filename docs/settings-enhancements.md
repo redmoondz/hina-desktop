@@ -84,8 +84,9 @@ real Connector credential is used in this check.
   an intentional rapid tap from OS autorepeat.
 - The optional microphone warm-hold preference retains its existing semantics;
   leave it off to release the physical microphone between recordings.
-- No Windows installer was executed or release published in this checkout.
-  Existing portable folders require the first NSIS installer installation before
-  relying on automatic replacement. GitHub had no public Hina releases at the
-  time of verification.
+- The Windows NSIS installer was built and installed locally after automated
+  verification; the running app reported `0.3.0` and passed its saved Connector
+  check. See [live Windows evidence](../evidence/settings-enhancements/README.md).
+  Other portable installations require the first NSIS installation before
+  relying on automatic replacement. No release was published to GitHub.
 - Interactive voice conversation with the agent remains outside this change.
