@@ -1,0 +1,17 @@
+{
+  "source": "real installed tray handler and public GitHub release",
+  "mode": "offline",
+  "dialogs": [
+    {
+      "type": "error",
+      "title": "Couldn't check for updates",
+      "message": "Couldn't check for updates",
+      "detail": "We had trouble checking for updates. Please try again later."
+    }
+  ],
+  "offered": null,
+  "downloaded": false,
+  "installRequested": false,
+  "from": "0.3.1",
+  "passed": true
+}

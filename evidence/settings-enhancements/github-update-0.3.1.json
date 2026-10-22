@@ -1,0 +1,26 @@
+{
+  "source": "real installed tray handler and public GitHub release",
+  "mode": "update",
+  "dialogs": [
+    {
+      "type": "question",
+      "title": "settings.general.updates.dialogs.updateAvailable.title",
+      "message": "settings.general.updates.dialogs.updateAvailable.description",
+      "buttons": ["settings.general.updates.downloadUpdate", "Cancel"]
+    },
+    {
+      "type": "question",
+      "title": "settings.general.updates.dialogs.installUpdate.title",
+      "message": "settings.general.updates.dialogs.installUpdate.description",
+      "buttons": ["settings.general.updates.dialogs.installUpdate.confirmText", "Cancel"]
+    }
+  ],
+  "offered": "0.3.1",
+  "downloaded": true,
+  "installRequested": true,
+  "from": "0.3.0",
+  "passed": true,
+  "installedVersion": "0.3.1",
+  "installationVerified": true,
+  "release": "https://github.com/redmoondz/hina-desktop/releases/tag/v0.3.1"
+}
