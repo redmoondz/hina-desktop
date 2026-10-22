@@ -25,6 +25,7 @@ jobs:
         run: node -p '"version=" + require("./package.json").version' >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run quality-check
+      - run: node --test test/helpers/windowsUpdateAssets.test.js
       - run: node --import tsx --test test/helpers/hinaConnector.test.js test/helpers/hinaPortableSettings.test.js test/helpers/audioManagerPendingStart.test.js test/helpers/useAudioRecordingPreparationStop.test.js test/helpers/windowsKeyPressLifecycle.test.js test/helpers/hotkeyModifierOnlyNative.test.js test/helpers/windowManagerAssistantPanel.test.js test/helpers/mediaPlayer.test.js test/components/hinaSettingsPanels.test.js test/components/hinaRendererSurface.test.js test/services/hinaVoiceAssistant.test.js test/helpers/dictationAgentInference.test.js test/helpers/secretKeys.test.js test/services/lanReasoningOutput.test.js test/components/fieldDirectionPolicy.test.js test/helpers/updater.test.js test/helpers/trayQuickActions.test.js
       - run: npm run prebuild:win
       - run: npx electron-rebuild --force --which-module better-sqlite3
@@ -33,11 +34,7 @@ jobs:
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
       - name: Verify update assets
-        shell: pwsh
-        run: |
-          if (!(Test-Path dist/latest.yml)) { throw "Missing latest.yml update metadata" }
-          if (!(Get-ChildItem dist/*.exe)) { throw "Missing Windows installer" }
-          if (!(Get-ChildItem dist/*.blockmap)) { throw "Missing installer blockmap" }
+        run: node scripts/verify-windows-update-assets.cjs dist
       - uses: actions/upload-artifact@v4
         with:
           name: Hina-Desktop-Windows-installer

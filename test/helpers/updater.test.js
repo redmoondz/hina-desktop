@@ -258,3 +258,38 @@ test("the update feed belongs to Hina Desktop", () => {
   assert.equal(feed.private, false);
   manager.cleanup();
 });
+
+test("an empty GitHub release feed is a checked no-releases result without an error notification", async () => {
+  const autoUpdater = makeAutoUpdater();
+  autoUpdater.checkForUpdates = async () => {
+    const error = Object.assign(new Error("No published versions on GitHub"), {
+      code: "ERR_XML_MISSED_ELEMENT",
+    });
+    autoUpdater.listeners.error(error);
+    throw error;
+  };
+  const manager = createUpdateManager(autoUpdater);
+  const sent = [];
+  manager.setWindowManager({ mainWindow: makeRendererWindow(sent) });
+  const result = await manager.checkForUpdates();
+  assert.equal(result.status, "no-releases");
+  assert.equal(result.updateAvailable, false);
+  assert.equal(sent.includes("update-error"), false);
+  manager.cleanup();
+});
+
+test("network errors and missing release metadata remain failures rather than no-releases", async () => {
+  for (const code of [
+    "ERR_UPDATER_LATEST_VERSION_NOT_FOUND",
+    "ERR_UPDATER_CHANNEL_FILE_NOT_FOUND",
+    "ENOTFOUND",
+  ]) {
+    const autoUpdater = makeAutoUpdater();
+    autoUpdater.checkForUpdates = async () => {
+      throw Object.assign(new Error("Failed to check"), { code });
+    };
+    const manager = createUpdateManager(autoUpdater);
+    await assert.rejects(() => manager.checkForUpdates(), { code });
+    manager.cleanup();
+  }
+});

@@ -57,17 +57,23 @@ class TrayManager {
     if (!this.updateManager || this.isCheckingForUpdates) return;
     this.isCheckingForUpdates = true;
     this.updateTrayMenu();
-    const t = (key, options) => i18nMain.t(`settings.general.updates.${key}`, options);
+    const t = (key, options) => i18nMain.t(`settingsPage.general.updates.${key}`, options);
     let stage = "checkFailed";
     try {
       if (!this.updateManager.updateDownloaded) {
         const result = await this.updateManager.checkForUpdates();
         if (!result.updateAvailable) {
+          const outcome = result.status === "no-releases" ? "noReleases" : "noUpdates";
           await dialog.showMessageBox({
             type: "info",
             title: t("title"),
-            message: t("dialogs.noUpdates.title"),
-            detail: result.message || t("dialogs.noUpdates.description"),
+            message: t(`dialogs.${outcome}.title`),
+            detail:
+              result.status === "no-releases"
+                ? t(`dialogs.${outcome}.description`)
+                : !result.message || result.message === "You are running the latest version"
+                  ? t("dialogs.noUpdates.description")
+                  : result.message,
           });
           return;
         }
@@ -377,7 +383,7 @@ class TrayManager {
         },
       },
       {
-        label: i18nMain.t("settings.general.updates.checkForUpdates"),
+        label: i18nMain.t("settingsPage.general.updates.checkForUpdates"),
         enabled: !!this.updateManager && !this.isCheckingForUpdates,
         click: () => this.checkForUpdatesFromTray(),
       },

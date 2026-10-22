@@ -4,6 +4,14 @@ const { autoUpdater } = require("electron-updater");
 // installs are updated by the package manager instead.
 const isUpdaterSupported = process.platform !== "linux" || Boolean(process.env.APPIMAGE);
 
+function isEmptyReleaseFeed(error) {
+  return (
+    error?.code === "ERR_UPDATER_NO_PUBLISHED_VERSIONS" ||
+    ((!error?.code || error.code === "ERR_XML_MISSED_ELEMENT") &&
+      error?.message === "No published versions on GitHub")
+  );
+}
+
 class UpdateManager {
   constructor() {
     this.updateAvailable = false;
@@ -102,6 +110,7 @@ class UpdateManager {
         this.notifyRenderers("update-not-available", info);
       },
       error: (err) => {
+        if (isEmptyReleaseFeed(err)) return;
         console.error("❌ Auto-updater error:", err);
         this.isDownloading = false;
         this.notifyRenderers("update-error", err);
@@ -197,6 +206,11 @@ class UpdateManager {
         };
       }
     } catch (error) {
+      if (isEmptyReleaseFeed(error)) {
+        this.updateAvailable = false;
+        this.lastUpdateInfo = null;
+        return { updateAvailable: false, status: "no-releases" };
+      }
       console.error("❌ Update check error:", error);
       throw error;
     }

@@ -159,6 +159,7 @@
   },
   "win": {
     "target": ["nsis"],
+    "artifactName": "Hina-Desktop-Setup-${version}-${arch}.${ext}",
     "icon": "src/assets/icon.ico",
     "forceCodeSigning": false,
     "extraResources": [
