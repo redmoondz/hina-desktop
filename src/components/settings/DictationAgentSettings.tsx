@@ -18,6 +18,7 @@ import { SettingsPanel, SettingsPanelRow, SettingsRow, SectionHeader } from "../
 import PermissionCard from "../ui/PermissionCard";
 import PromptStudio from "../ui/PromptStudio";
 import InferenceConfigEditor from "./InferenceConfigEditor";
+import HinaConnectorSettings from "./HinaConnectorSettings";
 
 export default function DictationAgentSettings() {
   const { t } = useTranslation();
@@ -150,6 +151,7 @@ export default function DictationAgentSettings() {
 
   return (
     <div className="space-y-4">
+      <HinaConnectorSettings />
       <SettingsPanel>
         <SettingsPanelRow>
           <SettingsRow

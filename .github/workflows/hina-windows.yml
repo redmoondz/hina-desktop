@@ -1,0 +1,27 @@
+name: Hina Desktop Windows
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: node --import tsx --test test/helpers/hinaConnector.test.js test/services/hinaVoiceAssistant.test.js test/helpers/dictationAgentInference.test.js test/helpers/secretKeys.test.js test/services/lanReasoningOutput.test.js test/components/fieldDirectionPolicy.test.js
+      - run: npm run prebuild:win
+      - run: npx electron-rebuild --force --which-module better-sqlite3
+      - run: npm run build:hina:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Hina-Desktop-0.1.0-Windows-x64
+          path: dist/win-unpacked/
+          if-no-files-found: error

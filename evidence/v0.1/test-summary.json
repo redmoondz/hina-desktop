@@ -1,0 +1,28 @@
+{
+  "fullRun": {
+    "tests": 8759,
+    "passed": 8673,
+    "failed": 38,
+    "skipped": 47,
+    "todo": 1
+  },
+  "preChangeUpstream": {
+    "tests": 8752,
+    "passed": 8650,
+    "failed": 53,
+    "skipped": 48,
+    "todo": 1
+  },
+  "newFailureNames": [
+    "every shared Input and Textarea consumer has an explicit reviewed classification"
+  ],
+  "correctedAfterFullRun": [
+    "every shared Input and Textarea consumer has an explicit reviewed classification"
+  ],
+  "finalFocusedRun": {
+    "tests": 48,
+    "passed": 48,
+    "failed": 0
+  },
+  "fullQualityCheck": "passed"
+}

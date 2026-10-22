@@ -1,0 +1,15 @@
+{
+  "testedAt": "2026-10-22T07:51:03.942Z",
+  "product": "Hina Desktop 0.1.0",
+  "path": "packaged ReasoningService -> preload IPC -> Windows main -> WSL curl -> Hina Connector -> existing OpenClaw hina agent",
+  "request": "Reply exactly: HINA_CONNECTION_OK",
+  "reply": "HINA_CONNECTION_OK",
+  "wallMs": 101709,
+  "agentTurnsInSuccessfulRun": 1,
+  "microphoneTested": false,
+  "hotkeyTested": false,
+  "tokensIn": null,
+  "tokensOut": null,
+  "cost": null,
+  "usageNote": "Connector does not expose usage; no token or cost figures were fabricated."
+}

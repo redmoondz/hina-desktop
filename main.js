@@ -25,6 +25,9 @@ const {
   systemPreferences,
 } = require("electron");
 const path = require("path");
+app.setName("Hina Desktop");
+const { hinaRequest } = require("./src/helpers/hinaConnector");
+ipcMain.handle("hina-connector-request", (_event, args) => hinaRequest(args));
 const http = require("http");
 const tls = require("tls");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
@@ -45,12 +48,12 @@ try {
 
 const VALID_CHANNELS = new Set(["development", "staging", "production"]);
 const DEFAULT_OAUTH_PROTOCOL_BY_CHANNEL = {
-  development: "openwhispr-dev",
-  staging: "openwhispr-staging",
-  production: "openwhispr",
+  development: "hina-desktop-dev",
+  staging: "hina-desktop-staging",
+  production: "hina-desktop",
 };
-const BASE_WINDOWS_APP_ID = "com.gizmolabs.openwhispr";
-const DEFAULT_AUTH_BRIDGE_PORT = 5199;
+const BASE_WINDOWS_APP_ID = "com.hina.desktop";
+const DEFAULT_AUTH_BRIDGE_PORT = 5299;
 
 function isElectronBinaryExec() {
   const execPath = (process.execPath || "").toLowerCase();
@@ -88,7 +91,7 @@ function configureChannelUserDataPath() {
     return;
   }
 
-  const isolatedPath = path.join(app.getPath("appData"), `OpenWhispr-${APP_CHANNEL}`);
+  const isolatedPath = path.join(app.getPath("appData"), `Hina Desktop-${APP_CHANNEL}`);
   app.setPath("userData", isolatedPath);
 }
 
@@ -266,8 +269,8 @@ if (!gotSingleInstanceLock) {
 const isLiveWindow = (window) => window && !window.isDestroyed();
 
 // Ensure macOS menus use the proper casing for the app name
-if (process.platform === "darwin" && app.getName() !== "OpenWhispr") {
-  app.setName("OpenWhispr");
+if (process.platform === "darwin" && app.getName() !== "Hina Desktop") {
+  app.setName("Hina Desktop");
 }
 
 // Add global error handling for uncaught exceptions

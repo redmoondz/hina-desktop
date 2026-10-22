@@ -1,13 +1,13 @@
 {
-  "appId": "com.gizmolabs.openwhispr",
+  "appId": "com.hina.desktop",
   "afterPack": "scripts/afterPack.js",
   "extraMetadata": {
     "windowsTrayIdentity": true
   },
-  "productName": "OpenWhispr",
+  "productName": "Hina Desktop",
   "protocols": {
-    "name": "OpenWhispr Protocol",
-    "schemes": ["openwhispr"]
+    "name": "Hina Desktop Protocol",
+    "schemes": ["hina-desktop"]
   },
   "directories": {
     "output": "dist"
@@ -99,7 +99,6 @@
     "src/workers/**/*"
   ],
   "extraResources": [
-    ".env",
     {
       "from": "src/assets",
       "to": "src/assets",
@@ -277,8 +276,8 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "OpenWhispr",
-    "repo": "openwhispr",
+    "owner": "redmoondz",
+    "repo": "hina-desktop",
     "private": false,
     "releaseType": "draft"
   }

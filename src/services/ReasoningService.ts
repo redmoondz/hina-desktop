@@ -857,6 +857,39 @@ class ReasoningService extends BaseReasoningService {
     const isLocalProvider = route.kind === "local";
     const isLanChat = route.kind === "self-hosted";
 
+    if (
+      isLanChat &&
+      config.inferenceScope === "dictationAgent" &&
+      localStorage.getItem("hinaConnectorEnabled") === "true"
+    ) {
+      try {
+        const lastUser = [...messages].reverse().find((message) => message.role === "user");
+        const text =
+          typeof lastUser?.content === "string"
+            ? lastUser.content
+            : lastUser?.content
+                .filter((part) => part.type === "text")
+                .map((part) => part.text)
+                .join("\n") || "";
+        const token = await window.electronAPI.getDictationAgentCustomKey?.();
+        const result = await window.electronAPI.hinaConnectorRequest({
+          url: route.baseUrl,
+          token: token || route.apiKey,
+          text,
+          ...(localStorage.getItem("hinaConnectorTransport") === "wsl"
+            ? { transport: "wsl" as const }
+            : {}),
+        });
+        if (abortController.signal.aborted) return;
+        if (!result.ok || !result.reply) throw new Error(result.error || "Hina returned no reply");
+        yield { type: "content", text: result.reply };
+        yield { type: "done", finishReason: "stop" };
+      } finally {
+        if (this.streamAbortController === abortController) this.streamAbortController = null;
+      }
+      return;
+    }
+
     if ((isLocalProvider || isLanChat) && !tools) {
       // Attachments are never routed to local/LAN providers, so content is string-only here.
       try {

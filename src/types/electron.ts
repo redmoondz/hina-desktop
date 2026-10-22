@@ -1337,6 +1337,13 @@ export interface ReferralItem {
 declare global {
   interface Window {
     electronAPI: {
+      hinaConnectorRequest: (args: {
+        url: string;
+        token: string;
+        text?: string;
+        check?: boolean;
+        transport?: "local" | "wsl";
+      }) => Promise<{ ok: boolean; reply?: string; error?: string }>;
       // Basic window operations
       setOnboardingWindowMode?: (mode: "compact" | "expanded" | "restore") => Promise<boolean>;
       setOnboardingActive?: (active: boolean) => Promise<boolean>;
