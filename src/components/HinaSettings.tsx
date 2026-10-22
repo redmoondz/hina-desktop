@@ -1,9 +1,12 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../stores/settingsStore";
-import type { CudaWhisperStatus, WhisperServerStatus } from "../types/electron";
 import LocalWhisperPicker from "./LocalWhisperPicker";
 import HinaConnectorSettings from "./settings/HinaConnectorSettings";
+import HinaConfigSettings from "./settings/HinaConfigSettings";
+import HinaGpuSettings from "./settings/HinaGpuSettings";
+import HinaDictationStats from "./settings/HinaDictationStats";
+import { Toggle } from "./ui/toggle";
 import { MicrophoneSettings } from "./ui/MicrophoneSettings";
 import { HotkeyInput } from "./ui/HotkeyInput";
 import { Button } from "./ui/button";
@@ -22,55 +25,15 @@ function SettingsCard({ title, children }: { title: string; children: ReactNode 
 export default function HinaSettings() {
   const { t } = useTranslation();
   const settings = useSettingsStore();
-  const [cuda, setCuda] = useState<CudaWhisperStatus | null>(null);
-  const [server, setServer] = useState<WhisperServerStatus | null>(null);
   const [autoStart, setAutoStart] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
-  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
-
-  const refreshGpu = useCallback(async () => {
-    const [pack, runtime] = await Promise.all([
-      window.electronAPI?.getCudaWhisperStatus?.(),
-      window.electronAPI?.whisperServerStatus?.(),
-    ]);
-    if (pack) setCuda(pack);
-    if (runtime) setServer(runtime);
-  }, []);
 
   useEffect(() => {
-    void refreshGpu().catch((error: unknown) => setStatus(String(error)));
     void window.electronAPI
       ?.getAutoStartEnabled?.()
       .then((state) => setAutoStart(state.enabled))
       .catch((error: unknown) => setStatus(String(error)));
-    const unsubscribe = window.electronAPI?.onWhisperGpuStatusChanged?.(() => {
-      void refreshGpu().catch((error: unknown) => setStatus(String(error)));
-    });
-    const unsubscribeProgress = window.electronAPI?.onCudaDownloadProgress?.((progress) => {
-      setDownloadProgress(progress.percentage);
-    });
-    return () => {
-      unsubscribe?.();
-      unsubscribeProgress?.();
-    };
-  }, [refreshGpu]);
-
-  async function installCuda() {
-    setBusy(true);
-    setStatus("");
-    setDownloadProgress(0);
-    try {
-      const result = await window.electronAPI.downloadCudaWhisperBinary();
-      if (!result.success) throw new Error(result.error || t("hinaSettings.actionFailed"));
-      await refreshGpu();
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : String(error));
-    } finally {
-      setBusy(false);
-      setDownloadProgress(null);
-    }
-  }
+  }, []);
 
   async function toggleAutoStart(enabled: boolean) {
     try {
@@ -81,14 +44,6 @@ export default function HinaSettings() {
       setStatus(error instanceof Error ? error.message : String(error));
     }
   }
-
-  const gpuStatus = server?.gpuAccelerated
-    ? t("hinaSettings.gpuActive", { backend: server.gpuBackend?.toUpperCase() })
-    : cuda?.gpuFailed
-      ? t("hinaSettings.gpuFallback")
-      : cuda?.downloaded
-        ? t("hinaSettings.gpuReady")
-        : t("hinaSettings.cpuReady");
 
   return (
     <main className="h-screen overflow-y-auto bg-background text-foreground">
@@ -168,56 +123,41 @@ export default function HinaSettings() {
               settings.setWhisperModel(model);
             }}
           />
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p>{gpuStatus}</p>
-            {cuda?.gpuInfo.gpuName && <p>{cuda.gpuInfo.gpuName}</p>}
-            {cuda?.gpuFailReason && <p>{cuda.gpuFailReason}</p>}
-            {downloadProgress !== null && (
-              <p role="status">
-                {t("hinaSettings.downloading", { progress: Math.round(downloadProgress) })}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              {cuda?.gpuInfo.hasNvidiaGpu && (!cuda.downloaded || cuda.needsUpdate) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={busy}
-                  onClick={() => void installCuda()}
-                >
-                  {t("hinaSettings.installCuda")}
-                </Button>
-              )}
-              {cuda?.gpuFailed && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    void window.electronAPI
-                      .whisperGpuRetry()
-                      .then(refreshGpu)
-                      .catch((error: unknown) => setStatus(String(error)));
-                  }}
-                >
-                  {t("hinaSettings.retryGpu")}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() =>
-                  void refreshGpu().catch((error: unknown) => setStatus(String(error)))
-                }
-              >
-                {t("hinaSettings.refresh")}
-              </Button>
-            </div>
-          </div>
+          <HinaGpuSettings />
         </SettingsCard>
 
         <HinaConnectorSettings />
+        <HinaDictationStats />
+        <HinaConfigSettings />
 
         <SettingsCard title={t("hinaSettings.preferences")}>
+          <label className="flex items-center justify-between gap-4 text-sm">
+            <span className="space-y-1">
+              <span className="block">Pause media while recording</span>
+              <span className="block text-xs text-muted-foreground">
+                Resume only media paused by Hina after recording stops.
+              </span>
+            </span>
+            <Toggle
+              ariaLabel="Pause media while recording"
+              checked={settings.pauseMediaOnDictation}
+              onChange={settings.setPauseMediaOnDictation}
+            />
+          </label>
+          <label className="flex items-center justify-between gap-4 text-sm">
+            <span className="space-y-1">
+              <span className="block">Keep transcription in clipboard</span>
+              <span className="block text-xs text-muted-foreground">
+                Insert text into the focused field and keep a copy in the clipboard. When off,
+                restore the previous clipboard.
+              </span>
+            </span>
+            <Toggle
+              ariaLabel="Keep transcription in clipboard"
+              checked={settings.keepTranscriptionInClipboard}
+              onChange={settings.setKeepTranscriptionInClipboard}
+            />
+          </label>
           <label className="flex items-center justify-between gap-3 text-sm">
             {t("hinaSettings.autoStart")}
             <input

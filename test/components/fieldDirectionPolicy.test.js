@@ -73,7 +73,7 @@ const EXPECTED_SHARED_FIELD_DIRECTIONS = {
   "src/components/notes/UploadAudioView.tsx": ["auto"],
   "src/components/settings/DictationAgentSettings.tsx": ["auto"],
   "src/components/settings/EnterpriseCheckoutDialog.tsx": ["inherit"],
-  "src/components/settings/HinaConnectorSettings.tsx": ["ltr", "ltr"],
+  "src/components/settings/HinaConnectorSettings.tsx": ["ltr", "ltr", "ltr"],
   "src/components/settings/ProfileSection.tsx": ["auto", "ltr", "ltr", "ltr"],
   "src/components/settings/WorkspaceDeveloperTab.tsx": ["auto"],
   "src/components/settings/WorkspaceSection.tsx": ["auto"],
@@ -89,6 +89,8 @@ const EXPECTED_NATIVE_FIELD_DIRECTIONS = {
   "src/components/CommandSearch.tsx": ["auto"],
   // The start-at-login checkbox has no text content to reorient.
   "src/components/HinaSettings.tsx": ["inherit"],
+  // The file picker contains a local filename, not editable prose.
+  "src/components/settings/HinaConfigSettings.tsx": ["inherit"],
   // Folder names and search accept user text in any script.
   "src/components/MeetingNotificationFolderPicker.tsx": ["auto", "auto"],
   "src/components/MemberPickList.tsx": ["auto"],

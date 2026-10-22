@@ -1119,6 +1119,38 @@ test("a refused managed Orukeet start without a fallback recorder records in bat
   assert.deepEqual(uploads, []);
 });
 
+test("a stopped streaming start does not reopen the microphone when the provider refuses it", async (t) => {
+  const AudioManager = await loadManagerClass(t);
+  useManagedOrukeetSettings();
+  installCapture(t);
+  globalThis.MediaRecorder = class {
+    constructor() {
+      throw new Error("MediaRecorder unavailable");
+    }
+  };
+  let refuse;
+  const provider = startingOrukeetProvider({
+    start: () =>
+      new Promise((resolve) => {
+        refuse = () => resolve({ success: false, error: "Orukeet connection closed" });
+      }),
+  });
+  const { manager } = createStartingManager(AudioManager, { providerName: "orukeet", provider });
+  let batchStarts = 0;
+  manager.startRecording = async () => {
+    batchStarts++;
+    return true;
+  };
+  const starting = manager.startStreamingRecording();
+  while (!refuse) await new Promise((resolve) => setImmediate(resolve));
+  await manager.stopStreamingRecording();
+  refuse();
+  await starting;
+  assert.equal(batchStarts, 0);
+  assert.equal(manager.isRecording, false);
+  assert.equal(manager.isProcessing, false);
+});
+
 test("a stop pressed while a refused managed Orukeet start settles uploads once", async (t) => {
   const AudioManager = await loadManagerClass(t);
   useManagedOrukeetSettings();

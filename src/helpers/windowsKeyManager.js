@@ -2,8 +2,9 @@
  * WindowsKeyManager - Detects key up/down for global hotkeys on Windows
  *
  * Modifier-only and right-side-modifier hotkeys can't register through Electron's
- * globalShortcut, so each one is watched by a native low-level keyboard hook. One
- * hook process is spawned per watched key; key-down/key-up events are emitted
+ * globalShortcut. Regular dictation keys also use this hook so a quick second tap
+ * remains distinct from autorepeat. One hook process is spawned per watched key;
+ * key-down/key-up events are emitted
  * tagged with the key so the caller can route them to the right hotkey slot
  * (dictation, voice assistant, translation, meeting) and drive push-to-talk.
  */
@@ -21,6 +22,8 @@ class WindowsKeyManager extends EventEmitter {
     this.hasReportedError = false;
     this.hasReportedUnavailable = false;
     this.listeners = new Map(); // key string -> child process
+    this.readyKeys = new Set();
+    this.pressedKeys = new Set();
   }
 
   /**
@@ -75,6 +78,7 @@ class WindowsKeyManager extends EventEmitter {
     let lineBuffer = "";
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", (chunk) => {
+      if (this.listeners.get(key) !== child) return;
       lineBuffer += chunk;
       const lines = lineBuffer.split(/\r?\n/);
       lineBuffer = lines.pop();
@@ -94,18 +98,24 @@ class WindowsKeyManager extends EventEmitter {
     });
 
     child.on("error", (error) => {
-      if (this.listeners.get(key) === child) this.listeners.delete(key);
+      if (this.listeners.get(key) !== child) return;
+      this.readyKeys.delete(key);
+      this.pressedKeys.delete(key);
+      this.listeners.delete(key);
       this.reportError(error);
     });
 
     child.on("exit", (code, signal) => {
-      const trailingLine = lineBuffer.trim();
-      if (trailingLine) this.handleOutputLine(trailingLine, key);
-
       // wasTracked is false for intentional stops (_stopKey deletes first), so this
       // reports only unexpected exits — including signal crashes, where code is null.
       const wasTracked = this.listeners.get(key) === child;
-      if (wasTracked) this.listeners.delete(key);
+      if (wasTracked) {
+        const trailingLine = lineBuffer.trim();
+        if (trailingLine) this.handleOutputLine(trailingLine, key);
+        this.readyKeys.delete(key);
+        this.pressedKeys.delete(key);
+        this.listeners.delete(key);
+      }
       if (wasTracked && (code || signal)) {
         this.reportError(
           new Error(
@@ -117,6 +127,8 @@ class WindowsKeyManager extends EventEmitter {
   }
 
   _stopKey(key) {
+    this.readyKeys.delete(key);
+    this.pressedKeys.delete(key);
     const child = this.listeners.get(key);
     if (!child) return;
     this.listeners.delete(key);
@@ -130,18 +142,22 @@ class WindowsKeyManager extends EventEmitter {
 
   handleOutputLine(line, key) {
     if (line === "READY") {
+      this.readyKeys.add(key);
       debugLogger.debug("[WindowsKeyManager] Listener ready", { key });
       this.emit("ready", key);
       return;
     }
 
     if (line === "KEY_DOWN") {
+      if (this.pressedKeys.has(key)) return;
+      this.pressedKeys.add(key);
       debugLogger.debug("[WindowsKeyManager] KEY_DOWN detected", { key });
       this.emit("key-down", key);
       return;
     }
 
     if (line === "KEY_UP") {
+      this.pressedKeys.delete(key);
       debugLogger.debug("[WindowsKeyManager] KEY_UP detected", { key });
       this.emit("key-up", key);
       return;
@@ -155,6 +171,12 @@ class WindowsKeyManager extends EventEmitter {
    */
   stop() {
     for (const key of [...this.listeners.keys()]) this._stopKey(key);
+    this.readyKeys.clear();
+    this.pressedKeys.clear();
+  }
+
+  isWatchingKey(key) {
+    return this.readyKeys.has(key);
   }
 
   /**

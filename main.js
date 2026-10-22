@@ -457,6 +457,7 @@ function initializeDeferredManagers() {
     clipboardManager.preWarmAccessibility();
   }
   trayManager = new TrayManager();
+  trayManager.setUpdateManager(updateManager);
   globeKeyManager = new GlobeKeyManager({
     // Lets the listener put the user's macOS Globe action back after a crash.
     preferenceStatePath: path.join(app.getPath("userData"), "globe-preference-state.json"),

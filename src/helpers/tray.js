@@ -1,4 +1,4 @@
-const { Tray, Menu, nativeImage, app, systemPreferences } = require("electron");
+const { Tray, Menu, nativeImage, app, systemPreferences, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const debugLogger = require("./debugLogger");
@@ -23,6 +23,8 @@ class TrayManager {
     this.controlPanelWindow = null;
     this.windowManager = null;
     this.attachedControlPanels = new WeakSet();
+    this.updateManager = null;
+    this.isCheckingForUpdates = false;
   }
 
   setWindows(mainWindow, controlPanelWindow) {
@@ -45,6 +47,75 @@ class TrayManager {
 
   setWindowManager(windowManager) {
     this.windowManager = windowManager;
+  }
+
+  setUpdateManager(updateManager) {
+    this.updateManager = updateManager;
+  }
+
+  async checkForUpdatesFromTray() {
+    if (!this.updateManager || this.isCheckingForUpdates) return;
+    this.isCheckingForUpdates = true;
+    this.updateTrayMenu();
+    const t = (key, options) => i18nMain.t(`settings.general.updates.${key}`, options);
+    let stage = "checkFailed";
+    try {
+      if (!this.updateManager.updateDownloaded) {
+        const result = await this.updateManager.checkForUpdates();
+        if (!result.updateAvailable) {
+          await dialog.showMessageBox({
+            type: "info",
+            title: t("title"),
+            message: t("dialogs.noUpdates.title"),
+            detail: result.message || t("dialogs.noUpdates.description"),
+          });
+          return;
+        }
+        const choice = await dialog.showMessageBox({
+          type: "question",
+          title: t("dialogs.updateAvailable.title"),
+          message: t("dialogs.updateAvailable.description", { version: result.version }),
+          buttons: [t("downloadUpdate", { version: result.version }), i18nMain.t("common.cancel")],
+          defaultId: 0,
+          cancelId: 1,
+        });
+        if (choice.response !== 0) return;
+        stage = "downloadFailed";
+        const download = await this.updateManager.downloadUpdate();
+        if (!download.success) throw new Error("Update download could not start");
+        if (!this.updateManager.updateDownloaded) {
+          await dialog.showMessageBox({
+            type: "info",
+            title: t("title"),
+            message: t("dialogs.almostThere.title"),
+            detail: t("dialogs.almostThere.description"),
+          });
+          return;
+        }
+      }
+      const choice = await dialog.showMessageBox({
+        type: "question",
+        title: t("dialogs.installUpdate.title"),
+        message: t("dialogs.installUpdate.description"),
+        buttons: [t("dialogs.installUpdate.confirmText"), i18nMain.t("common.cancel")],
+        defaultId: 0,
+        cancelId: 1,
+      });
+      if (choice.response !== 0) return;
+      stage = "installFailed";
+      const install = await this.updateManager.installUpdate();
+      if (!install.success) throw new Error("Update installation could not start");
+    } catch {
+      await dialog.showMessageBox({
+        type: "error",
+        title: t(`dialogs.${stage}.title`),
+        message: t(`dialogs.${stage}.title`),
+        detail: t(`dialogs.${stage}.description`),
+      });
+    } finally {
+      this.isCheckingForUpdates = false;
+      this.updateTrayMenu();
+    }
   }
 
   setCreateControlPanelCallback(callback) {
@@ -304,6 +375,11 @@ class TrayManager {
         click: () => {
           void this.toggleControlPanelFromTray();
         },
+      },
+      {
+        label: i18nMain.t("settings.general.updates.checkForUpdates"),
+        enabled: !!this.updateManager && !this.isCheckingForUpdates,
+        click: () => this.checkForUpdatesFromTray(),
       },
       { type: "separator" },
       {

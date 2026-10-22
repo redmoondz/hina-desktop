@@ -45,7 +45,7 @@ test("local settings expose local model management and Hina without generic prov
     "MicrophoneSettings",
     "HotkeyInput",
     "HinaConnectorSettings",
-    "getCudaWhisperStatus",
+    "HinaGpuSettings",
     "setAutoStartEnabled",
   ]) {
     assert.ok(panel.includes(capability), `Missing local capability: ${capability}`);

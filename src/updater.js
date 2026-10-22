@@ -174,6 +174,11 @@ class UpdateManager {
 
       console.log("🔍 Checking for updates...");
       const result = await autoUpdater.checkForUpdates();
+      if (!result) {
+        throw new Error(
+          "Update checking is unavailable for this build. Install the Hina Desktop Windows installer release."
+        );
+      }
 
       if (result?.isUpdateAvailable && result?.updateInfo) {
         console.log("📋 Update available:", result.updateInfo.version);

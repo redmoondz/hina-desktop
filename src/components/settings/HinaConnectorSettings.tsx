@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { SectionHeader } from "../ui/SettingsSection";
+import { controlPanelUrl } from "../../helpers/hinaPortableSettings";
 
 export default function HinaConnectorSettings() {
   const { t } = useTranslation();
@@ -16,6 +17,33 @@ export default function HinaConnectorSettings() {
   const [enabled, setEnabled] = useState(localStorage.getItem("hinaConnectorEnabled") === "true");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
+  const [controlUrl, setControlUrl] = useState(
+    localStorage.getItem("hinaControlUrl") || "http://127.0.0.1:18789/"
+  );
+
+  useEffect(() => {
+    const refresh = () => {
+      setUrl(useSettingsStore.getState().dictationAgentRemoteUrl || "http://127.0.0.1:3210");
+      setTransport(localStorage.getItem("hinaConnectorTransport") === "wsl" ? "wsl" : "local");
+      setControlUrl(localStorage.getItem("hinaControlUrl") || "http://127.0.0.1:18789/");
+      setEnabled(localStorage.getItem("hinaConnectorEnabled") === "true");
+      setStatus("");
+    };
+    window.addEventListener("hina-preferences-imported", refresh);
+    return () => window.removeEventListener("hina-preferences-imported", refresh);
+  }, []);
+
+  async function openControl() {
+    try {
+      const address = controlPanelUrl(controlUrl.trim());
+      localStorage.setItem("hinaControlUrl", address);
+      const result = await window.electronAPI.openExternal(address);
+      if (!result.success) throw new Error(result.error || "Could not open OpenClaw Control.");
+      setStatus("Opened OpenClaw Control in your browser.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : String(error));
+    }
+  }
 
   async function connect() {
     setBusy(true);
@@ -53,6 +81,11 @@ export default function HinaConnectorSettings() {
         title={t("hinaSettings.connectorTitle")}
         description={t("hinaSettings.connectorDescription")}
       />
+      <p className="text-xs text-muted-foreground">
+        Connector and OpenClaw Control use different addresses and tokens. On Windows, select WSL if
+        the Connector runs there. Connecting checks service identity and authentication without
+        sending an agent command.
+      </p>
       <label className="block text-xs space-y-1">
         <span>{t("hinaSettings.connectorLocation")}</span>
         <select
@@ -92,6 +125,34 @@ export default function HinaConnectorSettings() {
         {status ||
           t(enabled ? "hinaSettings.connectorEnabled" : "hinaSettings.connectorUnconfigured")}
       </p>
+      <div className="space-y-3 border-t border-border pt-4">
+        <h3 className="text-sm font-medium">OpenClaw Control</h3>
+        <label className="block space-y-1 text-xs">
+          <span>Dashboard address</span>
+          <Input
+            dir="ltr"
+            aria-label="OpenClaw Control address"
+            value={controlUrl}
+            onChange={(event) => setControlUrl(event.target.value)}
+            onBlur={() => {
+              try {
+                localStorage.setItem("hinaControlUrl", controlPanelUrl(controlUrl.trim()));
+              } catch {
+                setStatus("Use an HTTP or HTTPS dashboard address without tokens.");
+              }
+            }}
+            placeholder="http://127.0.0.1:18789/"
+          />
+        </label>
+        <p className="text-xs text-muted-foreground">
+          Opens your existing gateway dashboard in the browser. Authenticate there separately. This
+          address must be reachable from Windows; WSL Connector transport does not proxy the
+          dashboard.
+        </p>
+        <Button variant="outline" size="sm" onClick={() => void openControl()}>
+          Open OpenClaw Control
+        </Button>
+      </div>
     </div>
   );
 }

@@ -822,7 +822,18 @@ class WindowManager {
         return;
       }
 
-      if (!isPress()) return;
+      // A ready Windows hook owns physical down/up transitions. Keep the OS
+      // accelerator reserved, but ignore its duplicate notification. The hook
+      // can distinguish a quick second tap from a held key's autorepeat.
+      if (process.platform === "win32" && this.windowsKeyManager?.isWatchingKey?.(currentHotkey)) {
+        return;
+      }
+      const freshPress = isPress();
+      const windowsStop =
+        process.platform === "win32" &&
+        (this._isDictatingToggle ||
+          this._dictationLifecycleState === DICTATION_LIFECYCLE.PREPARING);
+      if (!freshPress && !windowsStop) return;
       this.sendToggleDictation();
     };
   }

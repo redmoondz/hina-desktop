@@ -1514,10 +1514,19 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     return stream;
   }
 
+  cancelPendingRecordingStart() {
+    if (this.isRecording) return false;
+    this._cancelActivationCapture(this._takeActivationCapture());
+    this.preparedMicCapture.cancel();
+    this.micStreamHold.drop();
+    return true;
+  }
+
   async startRecording(forceDefaultMic = false) {
     let prepared = null;
     let preparedAdopted = false;
     let freshTap = null;
+    const activationGeneration = this._activationCaptureGeneration ?? 0;
     this._startInProgress = true;
     try {
       if (!this.isRecordingAllowedByPolicy()) {
@@ -1534,7 +1543,6 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         return false;
       }
 
-      const activationGeneration = this._activationCaptureGeneration ?? 0;
       if (
         !(await this._beginActivationCapture()) ||
         activationGeneration !== (this._activationCaptureGeneration ?? 0)
@@ -1544,9 +1552,20 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       prepared = forceDefaultMic ? null : await this.preparedMicCapture.take();
       const constraints =
         prepared?.constraints ?? (await this.getAudioConstraints(forceDefaultMic));
+      if (activationGeneration !== (this._activationCaptureGeneration ?? 0)) {
+        if (prepared) this._disposePrepared(prepared);
+        return false;
+      }
       // Without a prepared capture the tap starts here, before the mic opens.
       freshTap = prepared ? null : this._startPcmTap();
       const micStream = prepared?.stream ?? (await this._acquireCaptureStream(constraints));
+      if (activationGeneration !== (this._activationCaptureGeneration ?? 0)) {
+        freshTap?.close();
+        if (prepared) this._disposePrepared(prepared);
+        else micStream.getTracks().forEach((track) => track.stop());
+        this.micStreamHold.drop();
+        return false;
+      }
       const micReadyAt = performance.now();
 
       const audioTrack = micStream.getAudioTracks()[0];
@@ -1698,11 +1717,13 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
 
       return true;
     } catch (error) {
+      const startWasCancelled = activationGeneration !== (this._activationCaptureGeneration ?? 0);
       this._cancelActivationCapture(this._takeActivationCapture());
       // A prepared value the recording never adopted still owns a live stream
       // (and possibly a pre-roll recorder); release it before any retry.
       freshTap?.close();
       if (prepared && !preparedAdopted) this._disposePrepared(prepared);
+      if (startWasCancelled) return false;
       if (isStaleDeviceError(error) && !forceDefaultMic) {
         // Pinned mic is gone (Chromium rotates IDs / device unplugged). Retry once on the default mic. See #900.
         logger.warn("Pinned microphone unavailable, retrying on default mic", {}, "audio");
@@ -1960,7 +1981,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       return true;
     }
     if (this.mediaRecorder?.state === "recording") {
-      this.mediaRecorder.stop();
+      const recorder = this.mediaRecorder;
+      recorder.stop();
+      recorder.stream?.getTracks().forEach((track) => track.stop());
+      this._markCaptureStreamReleased();
       return true;
     }
     if (this.isRecording && !this.isStreaming) {
@@ -5127,6 +5151,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     let sessionId = null;
     let providerName = null;
     let startWasCancelled = () => false;
+    const activationGeneration = this._activationCaptureGeneration ?? 0;
     this._startInProgress = true;
     try {
       if (!this.isRecordingAllowedByPolicy()) {
@@ -5144,7 +5169,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       }
 
       this.stopRequestedDuringStreamingStart = false;
-      const activationGeneration = this._activationCaptureGeneration ?? 0;
+      this._streamingCaptureStoppedAt = null;
       if (
         !(await this._beginActivationCapture()) ||
         activationGeneration !== (this._activationCaptureGeneration ?? 0)
@@ -5163,7 +5188,9 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       this._activeStreamingConfig = { ...this.sttConfig };
       const ownsSession = () => this._activeStreamingSessionId === sessionId;
       const cancellationGeneration = this._streamingCancellationGeneration;
-      startWasCancelled = () => cancellationGeneration !== this._streamingCancellationGeneration;
+      startWasCancelled = () =>
+        cancellationGeneration !== this._streamingCancellationGeneration ||
+        activationGeneration !== (this._activationCaptureGeneration ?? 0);
 
       const t0 = performance.now();
       const prepared = forceDefaultMic ? null : await this.preparedMicCapture.take();
@@ -5174,11 +5201,22 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       const constraints =
         prepared?.constraints ?? (await this.getAudioConstraints(forceDefaultMic));
       const tConstraints = performance.now();
+      if (activationGeneration !== (this._activationCaptureGeneration ?? 0)) {
+        if (prepared) this._disposePrepared(prepared);
+        this._settleStreamingStart();
+        return false;
+      }
 
       // 1. Get mic stream (can take 10-15s on a cold driver — unless a prepared
       //    capture or a held master stream already opened the device).
       const stream = prepared?.stream ?? (await this._acquireCaptureStream(constraints));
       acquiredStream = stream;
+      if (activationGeneration !== (this._activationCaptureGeneration ?? 0)) {
+        stream.getTracks().forEach((track) => track.stop());
+        this.micStreamHold.drop();
+        this._settleStreamingStart();
+        return false;
+      }
       const tMedia = performance.now();
 
       const audioTrack = stream.getAudioTracks()[0];
@@ -5412,11 +5450,14 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       }
 
       if (result.needsFallback) {
+        const stoppedDuringStart = this.stopRequestedDuringStreamingStart;
         this.isRecording = false;
         this.recordingStartTime = null;
         this.stopRequestedDuringStreamingStart = false;
         await this.cleanupStreaming();
+        this.isProcessing = false;
         this.onStateChange?.({ isRecording: false, isProcessing: false, isStreaming: false });
+        if (stoppedDuringStart || startWasCancelled()) return false;
         logger.debug("Streaming unavailable, falling back to regular recording", {}, "streaming");
         return this.startRecording();
       }
@@ -5447,6 +5488,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       return true;
     } catch (error) {
       const stopRequested = this.stopRequestedDuringStreamingStart;
+      const cancelled = startWasCancelled();
       this._cancelActivationCapture(this._takeActivationCapture());
       this._settleStreamingStart();
       this.stopRequestedDuringStreamingStart = false;
@@ -5458,7 +5500,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         this._markCaptureStreamReleased();
       }
 
-      if (startWasCancelled()) {
+      if (cancelled) {
         // The cancel ran before this start created its spool, and this path
         // skips cleanupStreaming.
         this._takeRecordingSpool()?.finish();
@@ -5552,6 +5594,18 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   async stopStreamingRecording() {
     if (this.streamingStartInProgress) {
       this.stopRequestedDuringStreamingStart = true;
+      // Provider startup may be waiting on the network. Freeze capture now;
+      // the existing deferred stop can finalize the audio once it connects.
+      if (this.isRecording) {
+        this._streamingCaptureStoppedAt = Date.now();
+        this.micRecovery.stop();
+        this.streamingStream?.getTracks().forEach((track) => track.stop());
+        this._markCaptureStreamReleased();
+        this.streamingSource?.disconnect();
+        this.isRecording = false;
+        this.isProcessing = true;
+        this.onStateChange?.({ isRecording: false, isProcessing: true, isStreaming: true });
+      }
       logger.debug("Streaming stop requested while start is in progress", {}, "streaming");
       return true;
     }
@@ -5704,7 +5758,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     };
 
     const durationSeconds = this.recordingStartTime
-      ? (Date.now() - this.recordingStartTime) / 1000
+      ? ((this._streamingCaptureStoppedAt ?? Date.now()) - this.recordingStartTime) / 1000
       : null;
     const analyticsOccurredAt = new Date(this.recordingStartTime || Date.now());
 

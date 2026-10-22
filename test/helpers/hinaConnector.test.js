@@ -2,6 +2,32 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { hinaRequest, connectorBase } = require("../../src/helpers/hinaConnector");
 
+test("WSL requests stop their curl process when the connection deadline expires", async (t) => {
+  const processApi = require("node:child_process");
+  const execFile = processApi.execFile;
+  let child;
+  t.mock.method(processApi, "execFile", (_command, _args, options, callback) => {
+    child = execFile(process.execPath, ["-e", "setTimeout(() => {}, 1000)"], options, callback);
+    return child;
+  });
+  const controller = new AbortController();
+  const { wslFetch } = require("../../src/helpers/hinaConnector");
+  const pending = wslFetch("http://127.0.0.1:3210/health", {
+    headers: {},
+    signal: controller.signal,
+  });
+  controller.abort();
+  const outcome = await Promise.race([
+    pending.then(
+      () => "resolved",
+      () => "aborted"
+    ),
+    new Promise((resolve) => setTimeout(() => resolve("still waiting"), 100)),
+  ]);
+  assert.equal(outcome, "aborted");
+  assert.equal(child.killed, true);
+});
+
 test("WSL transport keeps credentials off process arguments and preserves HTTP status", async (t) => {
   const childProcess = require("node:child_process");
   let config = "";
@@ -69,6 +95,23 @@ test("connection test checks agent identity and authenticated access without an 
   );
   assert.deepEqual(result, { ok: true, reply: "Connected to Hina" });
   assert.deepEqual(urls, ["http://localhost:3210/health", "http://localhost:3210/metrics"]);
+});
+
+test("connection diagnostics identify unreachable endpoints, wrong service and rejected tokens", async () => {
+  const args = { url: "http://localhost:3210", token: "test-token", check: true };
+  const missing = await hinaRequest(args, async () => {
+    throw new Error("test-token");
+  });
+  assert.match(missing.error, /Cannot reach.*Windows.*WSL/);
+  const wrong = await hinaRequest(args, async () => new Response("not-json", { status: 200 }));
+  assert.match(wrong.error, /Hina Connector/);
+  const auth = await hinaRequest(args, async (url) =>
+    url.endsWith("/health")
+      ? Response.json({ ok: true, agent: "hina" })
+      : new Response("test-token", { status: 401 })
+  );
+  assert.match(auth.error, /bearer token.*401/);
+  assert.equal(auth.error.includes("test-token"), false);
 });
 
 test("authentication, network, empty replies and invalid inputs fail without exposing secrets", async () => {

@@ -237,3 +237,24 @@ test("a Linux AppImage is supported, but deb/rpm/tar.gz installs never touch the
 
   packaged.cleanup();
 });
+
+test("an unavailable updater check is never reported as the latest version", async () => {
+  const autoUpdater = makeAutoUpdater();
+  autoUpdater.checkForUpdates = async () => null;
+  const manager = createUpdateManager(autoUpdater);
+  await assert.rejects(() => manager.checkForUpdates(), /unavailable/);
+  manager.cleanup();
+});
+
+test("the update feed belongs to Hina Desktop", () => {
+  const autoUpdater = makeAutoUpdater();
+  let feed;
+  autoUpdater.setFeedURL = (options) => {
+    feed = options;
+  };
+  const manager = createUpdateManager(autoUpdater);
+  assert.equal(feed.owner, "redmoondz");
+  assert.equal(feed.repo, "hina-desktop");
+  assert.equal(feed.private, false);
+  manager.cleanup();
+});

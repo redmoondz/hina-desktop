@@ -470,10 +470,15 @@ test("a cancelled streaming recording ends its spool", async (t) => {
   assert.equal(spool.finished, true);
 });
 
-test("a streaming start cancelled while the mic opens, then failing, ends its spool", async (t) => {
+test("a streaming start cancelled while the mic opens never creates a spool", async (t) => {
   const { createManager } = await load(t);
-  const spool = fakeSpool("streaming");
-  globalThis.__interruptedSpools = { start: () => spool };
+  let spoolsCreated = 0;
+  globalThis.__interruptedSpools = {
+    start: () => {
+      spoolsCreated++;
+      return fakeSpool("streaming");
+    },
+  };
   const micOpen = deferred();
   let micOpenStarted = false;
   const stream = {
@@ -499,6 +504,7 @@ test("a streaming start cancelled while the mic opens, then failing, ends its sp
     _streamingFallbackSegments: [],
     streamingTextDebounce: null,
     preparedMicCapture: { take: async () => null },
+    micStreamHold: { drop() {} },
     micRecovery: { stop() {} },
     isRecordingAllowedByPolicy: () => true,
     getAudioConstraints: async () => ({}),
@@ -524,7 +530,7 @@ test("a streaming start cancelled while the mic opens, then failing, ends its sp
   micOpen.resolve(stream);
 
   assert.deepEqual(await Promise.all([start, cancel]), [false, true]);
-  assert.equal(spool.finished, true);
+  assert.equal(spoolsCreated, 0);
   assert.equal(manager._recordingSpool, null);
 });
 

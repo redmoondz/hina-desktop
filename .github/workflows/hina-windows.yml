@@ -1,27 +1,67 @@
 name: Hina Desktop Windows
 on:
   workflow_dispatch:
+    inputs:
+      create_draft_release:
+        description: Create a draft release containing the installer and update metadata
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   windows:
     runs-on: windows-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
+      - id: version
+        name: Read package version
+        shell: bash
+        run: node -p '"version=" + require("./package.json").version' >> "$GITHUB_OUTPUT"
       - run: npm ci
-      - run: npm run typecheck
-      - run: node --import tsx --test test/helpers/hinaConnector.test.js test/services/hinaVoiceAssistant.test.js test/helpers/dictationAgentInference.test.js test/helpers/secretKeys.test.js test/services/lanReasoningOutput.test.js test/components/fieldDirectionPolicy.test.js
+      - run: npm run quality-check
+      - run: node --import tsx --test test/helpers/hinaConnector.test.js test/helpers/hinaPortableSettings.test.js test/helpers/audioManagerPendingStart.test.js test/helpers/useAudioRecordingPreparationStop.test.js test/helpers/windowsKeyPressLifecycle.test.js test/helpers/hotkeyModifierOnlyNative.test.js test/helpers/windowManagerAssistantPanel.test.js test/helpers/mediaPlayer.test.js test/components/hinaSettingsPanels.test.js test/components/hinaRendererSurface.test.js test/services/hinaVoiceAssistant.test.js test/helpers/dictationAgentInference.test.js test/helpers/secretKeys.test.js test/services/lanReasoningOutput.test.js test/components/fieldDirectionPolicy.test.js test/helpers/updater.test.js test/helpers/trayQuickActions.test.js
       - run: npm run prebuild:win
       - run: npx electron-rebuild --force --which-module better-sqlite3
-      - run: npm run build:hina:win
+      - name: Build Windows installer and updater metadata
+        run: npm run build:renderer && npx electron-builder --win nsis --x64 --config electron-builder.unsigned-win.json --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Verify update assets
+        shell: pwsh
+        run: |
+          if (!(Test-Path dist/latest.yml)) { throw "Missing latest.yml update metadata" }
+          if (!(Get-ChildItem dist/*.exe)) { throw "Missing Windows installer" }
+          if (!(Get-ChildItem dist/*.blockmap)) { throw "Missing installer blockmap" }
       - uses: actions/upload-artifact@v4
         with:
-          name: Hina-Desktop-0.1.0-Windows-x64
-          path: dist/win-unpacked/
+          name: Hina-Desktop-Windows-installer
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
           if-no-files-found: error
+  draft-release:
+    if: inputs.create_draft_release
+    needs: windows
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Hina-Desktop-Windows-installer
+          path: release-assets
+      - name: Create draft release for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_VERSION: ${{ needs.windows.outputs.version }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          gh release create "v$RELEASE_VERSION" release-assets/* --draft --target "$RELEASE_COMMIT" --title "Hina Desktop $RELEASE_VERSION" --notes "Windows installer with in-app updates. Review the installer and metadata, then publish this draft to make the update available."

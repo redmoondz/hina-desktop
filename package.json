@@ -1,6 +1,6 @@
 {
   "name": "hina-desktop",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Local voice dictation and integration with an existing Hina/OpenClaw agent",
   "main": "main.js",
   "private": true,

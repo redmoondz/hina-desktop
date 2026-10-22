@@ -62,6 +62,15 @@ test("a right-side single modifier also reaches the native listener on linux", a
   assert.deepEqual(mgr.getNativeListenerKeys("tap"), ["RightControl"]);
 });
 
+test("Windows watches regular dictation keys for physical releases when its listener is available", async () => {
+  setPlatform("win32");
+  const manager = new HotkeyManager();
+  manager.nativeListenerProbe = () => ({ available: true });
+  await manager.registerSlot("dictation", "F8", noop);
+  assert.deepEqual(manager.getNativeListenerKeys("tap"), ["F8"]);
+  assert.equal(registered.has("F8"), true, "keep the OS registration as a fallback");
+});
+
 // The listener backing those hotkeys needs its binary and read access to
 // /dev/input. When it cannot run, registration must fail like a refused
 // globalShortcut.register so the startup fallback, the Settings error and the

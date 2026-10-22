@@ -163,6 +163,45 @@ Module._load = function loadWindowManagerWithStubs(request, parent, isMain) {
   return originalLoad.call(this, request, parent, isMain);
 };
 const WindowManager = require("../../src/helpers/windowManager");
+
+test("Windows uses physical tap events without also toggling from the OS accelerator", async (t) => {
+  const platform = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", { value: "win32", configurable: true });
+  t.after(() => Object.defineProperty(process, "platform", platform));
+  let toggles = 0;
+  const manager = Object.assign(Object.create(WindowManager.prototype), {
+    hotkeyManager: { isInListeningMode: () => false },
+    isDictationProcessing: () => false,
+    getActivationMode: () => "tap",
+    windowsKeyManager: { isWatchingKey: (key) => key === "F8" },
+    sendToggleDictation: () => toggles++,
+  });
+  const callback = manager.createHotkeyCallback();
+  await callback("F8");
+  assert.equal(toggles, 0);
+});
+
+test("Windows fallback never debounces a quick Stop while recording or preparing", async (t) => {
+  const platform = Object.getOwnPropertyDescriptor(process, "platform");
+  Object.defineProperty(process, "platform", { value: "win32", configurable: true });
+  t.after(() => Object.defineProperty(process, "platform", platform));
+  let toggles = 0;
+  const manager = Object.assign(Object.create(WindowManager.prototype), {
+    hotkeyManager: { isInListeningMode: () => false },
+    isDictationProcessing: () => false,
+    getActivationMode: () => "tap",
+    sendToggleDictation: () => toggles++,
+    _dictationLifecycleState: "idle",
+  });
+  const callback = manager.createHotkeyCallback();
+  await callback("F8");
+  manager._dictationLifecycleState = "preparing";
+  await callback("F8");
+  manager._isDictatingToggle = true;
+  manager._dictationLifecycleState = "recording";
+  await callback("F8");
+  assert.equal(toggles, 3);
+});
 Module._load = originalLoad;
 
 function fakeWindow({ visible, focused = false }) {

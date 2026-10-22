@@ -188,6 +188,7 @@ export const useAudioRecording = (toast, options = {}) => {
         } catch (error) {
           logger.warn("Failed to refresh dictation target", { error: error?.message });
         }
+        if (preparationGeneration !== preparationGenerationRef.current) return false;
 
         demoKindRef.current = getOnboardingDemoKind(voiceAgentRequested);
         audioManagerRef.current.setVoiceAgentRequested(voiceAgentRequested);
@@ -250,6 +251,7 @@ export const useAudioRecording = (toast, options = {}) => {
           }
         }
 
+        if (preparationGeneration !== preparationGenerationRef.current) return false;
         const didStart = audioManagerRef.current.shouldUseStreaming()
           ? await audioManagerRef.current.startStreamingRecording()
           : await audioManagerRef.current.startRecording();
@@ -314,8 +316,22 @@ export const useAudioRecording = (toast, options = {}) => {
   const performStopRecording = useCallback(async () => {
     if (startLockRef.current) {
       stopRequestedDuringStartRef.current = true;
+      preparationGenerationRef.current += 1;
+      audioManagerRef.current?.cancelPreparedMicCapture?.();
+      const state = audioManagerRef.current?.getState();
+      if (!state?.isRecording) {
+        audioManagerRef.current?.cancelPendingRecordingStart?.();
+      }
       setIsPreparing(false);
       setIsStopping(true);
+      if (state?.isRecording) {
+        window.electronAPI?.unregisterCancelHotkey?.();
+        if (state.isStreaming) {
+          void playStopCue();
+          return await audioManagerRef.current.stopStreamingRecording();
+        }
+        if (audioManagerRef.current.stopRecording()) void playStopCue();
+      }
       return true;
     }
     if (stopLockRef.current) return false;
@@ -329,9 +345,8 @@ export const useAudioRecording = (toast, options = {}) => {
       window.electronAPI?.unregisterCancelHotkey?.();
       setIsPreparing(false);
       setIsStopping(true);
-      // Contract to the stable thinking state before MediaRecorder/streaming
-      // finalization can occupy the renderer on slower Windows machines.
-      await waitForVisualFrames();
+      // Stop capture immediately: a delayed compositor frame must never keep
+      // listening after the user has pressed Stop.
 
       if (currentState.isStreaming || currentState.isStreamingStartInProgress) {
         void playStopCue();
@@ -1131,6 +1146,7 @@ export const useAudioRecording = (toast, options = {}) => {
       setIsPreparing(false);
       setIsStopping(false);
       audioManagerRef.current.cancelPreparedMicCapture?.();
+      if (startLockRef.current) audioManagerRef.current.cancelPendingRecordingStart?.();
       window.electronAPI?.unregisterCancelHotkey?.();
       const state = audioManagerRef.current.getState();
       if (getSettings().pauseMediaOnDictation) {

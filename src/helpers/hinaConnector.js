@@ -15,6 +15,7 @@ function connectorBase(value) {
 }
 
 async function hinaRequest(args, fetcher = fetch) {
+  let phase = "address";
   try {
     if (args?.transport === "wsl") {
       if (process.platform !== "win32")
@@ -27,18 +28,24 @@ async function hinaRequest(args, fetcher = fetch) {
     }
     const options = {
       headers: { Authorization: `Bearer ${args.token}`, "Content-Type": "application/json" },
-      signal: AbortSignal.timeout(120000),
+      signal: AbortSignal.timeout(args.check === true ? 10000 : 120000),
       redirect: "error",
     };
     if (args.check === true) {
+      phase = "health";
       const health = await fetcher(`${base}/health`, options);
-      if (!health.ok || (await health.json()).agent !== "hina") {
+      const identity = health.ok ? await health.json().catch(() => null) : null;
+      if (identity?.agent !== "hina") {
         return { ok: false, error: "The endpoint is not a Hina Connector" };
       }
+      phase = "authentication";
       const auth = await fetcher(`${base}/metrics`, options);
       return auth.ok
         ? { ok: true, reply: "Connected to Hina" }
-        : { ok: false, error: `Connector authentication failed (HTTP ${auth.status})` };
+        : {
+            ok: false,
+            error: `Check the Connector bearer token (HTTP ${auth.status}). Use CONNECTOR_API_TOKEN from the running Connector, not an OpenClaw gateway token.`,
+          };
     }
     if (
       typeof args.text !== "string" ||
@@ -47,6 +54,7 @@ async function hinaRequest(args, fetcher = fetch) {
     ) {
       return { ok: false, error: "Enter a nonempty command under 48 KB" };
     }
+    phase = "command";
     const response = await fetcher(`${base}/v1/chat/completions`, {
       ...options,
       method: "POST",
@@ -63,9 +71,17 @@ async function hinaRequest(args, fetcher = fetch) {
       return { ok: false, error: "Hina returned an empty reply" };
     return { ok: true, reply };
   } catch {
+    if (phase === "address")
+      return {
+        ok: false,
+        error: "Use a loopback Connector URL, for example http://127.0.0.1:3210",
+      };
     return {
       ok: false,
-      error: "Hina Connector is unavailable or timed out. Check its URL and service.",
+      error:
+        phase === "command"
+          ? "Hina Connector is unavailable or timed out. Check its URL and service."
+          : "Cannot reach Hina Connector. Start its service and check the address. On Windows, choose WSL transport if Connector runs inside WSL; the default distribution must contain curl.",
     };
   }
 }
@@ -89,7 +105,7 @@ function wslFetch(url, options) {
         "--write-out",
         "\\n%{http_code}",
       ],
-      { timeout: 125000, maxBuffer: 1024 * 1024, windowsHide: true },
+      { timeout: 125000, signal: options.signal, maxBuffer: 1024 * 1024, windowsHide: true },
       (error, stdout) => {
         if (error) {
           reject(new Error("WSL Connector request failed"));
