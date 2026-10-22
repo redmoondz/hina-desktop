@@ -102,7 +102,14 @@ test("only the main renderer can replace process-global retention settings", () 
 });
 
 test("no sweep runs before the renderer has synced the persisted settings", () => {
+  const Module = require("node:module");
+  const originalLoad = Module._load;
+  Module._load = function retentionElectronStub(request, parent, isMain) {
+    if (request === "electron") return { ipcMain: { handle() {}, on() {} } };
+    return originalLoad.call(this, request, parent, isMain);
+  };
   const IPCHandlers = require("../../src/helpers/ipcHandlers");
+  Module._load = originalLoad;
   const sweeps = [];
   const context = {
     _retentionCleanupInterval: null,

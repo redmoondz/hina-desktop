@@ -6,9 +6,7 @@ const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function main() {
   const targets = await (await fetch("http://127.0.0.1:9333/json/list")).json();
   console.log(JSON.stringify(targets.map(({ id, title, url }) => ({ id, title, url }))));
-  const target =
-    targets.find((item) => item.url.includes("panel=true")) ||
-    targets.find((item) => item.type === "page");
+  const target = targets.find((item) => item.url.includes("panel=true"));
   if (!target) throw new Error("No packaged application window");
   const socket = new WebSocket(target.webSocketDebuggerUrl);
   await new Promise((resolve) => socket.addEventListener("open", resolve, { once: true }));
@@ -24,6 +22,8 @@ async function main() {
       else callbacks.resolve(result.result);
     } else if (result.method === "Runtime.exceptionThrown")
       errors.push(result.params.exceptionDetails.text);
+    else if (result.method === "Log.entryAdded" && result.params.entry.level === "error")
+      errors.push(result.params.entry.text);
   });
   function cdp(method, params = {}) {
     return new Promise((resolve, reject) => {
@@ -42,18 +42,14 @@ async function main() {
     return result.result.value;
   }
   await cdp("Runtime.enable");
-  console.log("INITIAL", await evaluate("document.body.innerText.slice(0, 1200)"));
-  await evaluate(
-    "localStorage.setItem('onboardingCompleted','true'); localStorage.setItem('authenticationSkipped','true'); location.reload()"
+  await cdp("Log.enable");
+  await cdp("Page.bringToFront");
+  await pause(3000);
+  console.log("SETTINGS_TEXT", await evaluate("document.body.innerText.slice(0, 3000)"));
+  const forbidden = await evaluate(
+    "/OpenWhispr|Sign in|Upgrade|Subscription|API keys|MCP servers/i.test(document.body.innerText)"
   );
-  await pause(4000);
-  console.log("OPEN_SETTINGS", await evaluate("window.electronAPI.openSettingsSection('llms')"));
-  await pause(2000);
-  await evaluate(
-    "[...document.querySelectorAll('button')].find((button) => /Voice Assistant|Голосовой ассистент/i.test(button.textContent))?.click()"
-  );
-  await pause(1500);
-  console.log("SETTINGS", await evaluate("document.body.innerText.slice(-2500)"));
+  if (forbidden) throw new Error("Removed product surface remains visible");
   const output = path.join(process.env.TEMP, "hina-evidence");
   fs.mkdirSync(output, { recursive: true });
   for (const width of [1280, 390]) {
@@ -68,18 +64,31 @@ async function main() {
         features: [{ name: "prefers-color-scheme", value: theme }],
       });
       await evaluate(`document.documentElement.classList.toggle('dark', ${theme === "dark"})`);
-      await pause(300);
-      const screenshot = await cdp("Page.captureScreenshot", { format: "png" });
-      fs.writeFileSync(
-        path.join(output, `settings-${width}-${theme}.png`),
-        Buffer.from(screenshot.data, "base64")
-      );
+      for (const position of ["top", "bottom"]) {
+        await evaluate(
+          `document.querySelector('main').scrollTop = ${position === "top" ? "0" : "document.querySelector('main').scrollHeight"}`
+        );
+        await pause(300);
+        const overflow = await evaluate(
+          "document.querySelector('main').scrollWidth > innerWidth + 1"
+        );
+        if (overflow) throw new Error("Settings overflow the viewport horizontally");
+        const screenshot = await cdp("Page.captureScreenshot", {
+          format: "png",
+          captureBeyondViewport: true,
+        });
+        fs.writeFileSync(
+          path.join(output, `settings-${width}-${theme}${position === "top" ? "" : "-bottom"}.png`),
+          Buffer.from(screenshot.data, "base64")
+        );
+      }
     }
   }
   await cdp("Emulation.clearDeviceMetricsOverride");
   console.log("CONSOLE_EXCEPTIONS", JSON.stringify(errors));
   console.log("SCREENSHOTS", output);
   socket.close();
+  if (errors.length) process.exitCode = 1;
 }
 
 main().catch((error) => {

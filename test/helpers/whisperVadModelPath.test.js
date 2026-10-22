@@ -20,7 +20,7 @@ describe("WhisperManager.getVadModelPath (#1208)", () => {
   let cacheRoot;
 
   // A fresh modelDirUtils with a temp home, so getCacheRoot's one-time migration
-  // never moves the real ~/.cache/openwhispr.
+  // never moves the real ~/.cache/hina.
   function managerOn(platform) {
     Module._load = function loadWithElectronStub(request, parent, isMain) {
       if (request === "electron" && parent?.filename === modelDirUtilsPath) {
@@ -51,7 +51,7 @@ describe("WhisperManager.getVadModelPath (#1208)", () => {
   beforeEach(() => {
     tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ow-vad-test-"));
     cacheRoot = path.join(tempRoot, "cache");
-    process.env.OPENWHISPR_CACHE_ROOT = cacheRoot;
+    process.env.HINA_CACHE_ROOT = cacheRoot;
   });
 
   afterEach(() => {

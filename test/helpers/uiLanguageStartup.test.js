@@ -55,6 +55,7 @@ test("fresh Chinese browser locale survives settings hydration", async (t) => {
   installNavigatorLanguage(t, "zh-Hans-CN");
   installBrowserGlobals(t, {
     initialStorage: {
+      uiLanguage: null,
       customDictionary: JSON.stringify(["OpenWhispr"]),
     },
     window: {

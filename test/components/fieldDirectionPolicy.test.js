@@ -87,6 +87,8 @@ const EXPECTED_SHARED_FIELD_DIRECTIONS = {
 const EXPECTED_NATIVE_FIELD_DIRECTIONS = {
   "src/components/ApiKeysSection.tsx": ["inherit"],
   "src/components/CommandSearch.tsx": ["auto"],
+  // The start-at-login checkbox has no text content to reorient.
+  "src/components/HinaSettings.tsx": ["inherit"],
   // Folder names and search accept user text in any script.
   "src/components/MeetingNotificationFolderPicker.tsx": ["auto", "auto"],
   "src/components/MemberPickList.tsx": ["auto"],

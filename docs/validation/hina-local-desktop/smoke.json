@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-10-22T08:59:53.750Z",
+  "ok": true,
+  "runtime": {
+    "localOnly": true,
+    "selectedModel": "turbo",
+    "models": ["turbo"],
+    "cuda": {
+      "downloaded": true,
+      "needsUpdate": false,
+      "inUse": true,
+      "gpuFailed": false
+    },
+    "cloud": {
+      "code": "LOCAL_ONLY",
+      "success": false
+    }
+  },
+  "start": {
+    "success": true,
+    "port": 8178
+  },
+  "server": {
+    "running": true,
+    "isRemote": false,
+    "gpuAccelerated": true,
+    "gpuBackend": "cuda",
+    "modelName": "large-v3-turbo"
+  },
+  "transcription": {
+    "success": true,
+    "text": "Hena desktop uses local speech recognition."
+  },
+  "connector": {
+    "checked": true,
+    "ok": true
+  }
+}

@@ -166,6 +166,11 @@ export async function authContextFetch(
   input: RequestInfo | URL,
   init?: RequestInit
 ): Promise<Response> {
+  if (typeof window !== "undefined" && window.electronAPI?.localOnly) {
+    throw Object.assign(new Error("Accounts are unavailable in the local desktop application."), {
+      code: "LOCAL_ONLY",
+    });
+  }
   await assertAuthRequestCurrent(init);
   try {
     const response = await globalThis.fetch(input, { ...init, credentials: "omit" });

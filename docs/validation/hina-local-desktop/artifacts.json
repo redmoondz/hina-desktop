@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "platform": "win32-x64",
+  "files": {
+    "Hina Desktop.exe": {
+      "bytes": 223746560,
+      "sha256": "451597391995f008a1e43ce0eb379bf0093b578a816c5158a92aa526b576e366"
+    },
+    "resources/app.asar": {
+      "bytes": 82935468,
+      "sha256": "43bcd0db502066d1eae179e6a9a7e559e86ee259c370a8809f7498b826ebc7a3"
+    }
+  }
+}

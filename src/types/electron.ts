@@ -1337,6 +1337,7 @@ export interface ReferralItem {
 declare global {
   interface Window {
     electronAPI: {
+      readonly localOnly?: boolean;
       hinaConnectorRequest: (args: {
         url: string;
         token: string;

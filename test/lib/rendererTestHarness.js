@@ -21,7 +21,8 @@ function addTeardown(t, teardown) {
 function installBrowserGlobals(t, { initialStorage = {}, window: windowProps = {} } = {}) {
   const originalWindow = globalThis.window;
   const originalLocalStorage = globalThis.localStorage;
-  const values = new Map(Object.entries(initialStorage));
+  // Most fixtures assert English labels; explicit preferences (including null) win.
+  const values = new Map(Object.entries({ uiLanguage: "en", ...initialStorage }));
   const storage = {
     getItem: (key) => (values.has(key) ? values.get(key) : null),
     setItem: (key, value) => values.set(key, String(value)),

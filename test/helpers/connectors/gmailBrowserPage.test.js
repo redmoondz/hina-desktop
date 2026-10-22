@@ -15,7 +15,16 @@ test("the page Google's sign-in ends on is worded in every UI language", async (
     for (const key of KEYS) {
       const text = i18nMain.t(key, { lng });
       assert.notEqual(text, key, `${lng}: ${key} is missing`);
-      if (lng !== "en") {
+      const declared = key
+        .split(".")
+        .reduce(
+          (value, segment) => value?.[segment],
+          require(`../../../src/locales/${lng}/translation.json`)
+        );
+      assert.equal(text, declared, `${lng}: ${key} must be declared in this locale`);
+      assert.doesNotMatch(text, /OpenWhispr/);
+      // Branded replacement copy is English in every locale for this local edition.
+      if (lng !== "en" && !text.includes("Hina Desktop")) {
         assert.notEqual(
           text,
           i18nMain.t(key, { lng: "en" }),

@@ -1,6 +1,16 @@
 const { OrukeetStreaming, MANAGED_STREAM_OPTIONS } = require("./orukeetStreaming");
 const { connectManagedOrukeet } = require("./orukeetCloudSession");
-const { ipcMain, app, shell, BrowserWindow, systemPreferences, net, session } = require("electron");
+const {
+  ipcMain: electronIpcMain,
+  app,
+  shell,
+  BrowserWindow,
+  systemPreferences,
+  net,
+  session,
+} = require("electron");
+const { createLocalOnlyIpc, localOnlyFailure } = require("./localOnlyPolicy");
+const ipcMain = createLocalOnlyIpc(electronIpcMain);
 const path = require("path");
 const fs = require("fs");
 const os = require("os");
@@ -17,16 +27,10 @@ const { WHISPER_GPU_FAILURE_REASON_KEYS } = require("./whisperGpuFailureReason")
 const { BYOK_API_KEYS } = require("../config/secretKeys");
 const tokenStore = require("./tokenStore");
 const accountScopeBinding = require("./accountScopeBinding");
-const { registerProductHelpIpc, remoteHelpPolicyState } = require("./productHelp");
 const { createCloudApiRequestHandler } = require("./cloudApiRequest");
-const { MetaActivation } = require("./metaActivation");
 const { decodeLeaderboardPngDataUrl, leaderboardImageFilename } = require("./leaderboardImage");
 const { withPolicyRequestHeaders } = require("./policyRequestHeaders");
-const {
-  createWorkspacePolicyManager,
-  isScreenContextBlocked,
-} = require("./workspacePolicyManager");
-const { createEnterpriseIdentityManager } = require("./enterpriseIdentityManager");
+const { isScreenContextBlocked } = require("./workspacePolicyManager");
 const { createCloudConfigRequestHandler } = require("./cloudConfigRequest");
 const { extractAnthropicText, describeMissingAnthropicText } = require("./anthropicResponse");
 const {
@@ -45,12 +49,6 @@ const {
   asProviderError,
   redactProviderBody,
 } = require("./providerHttpErrors");
-const {
-  registerConnectorIpc,
-  createConnectorPolicyResolver,
-  createConnectorAuthLookup,
-} = require("./connectors/connectorIpc");
-const { createNoteAttendeesLookup, searchContacts } = require("./connectors/contactSearch");
 // The renderer's ModelRegistry is not main-loadable; the raw registry data is
 // packaged, and the route resolver only needs {id, baseUrl} per provider.
 const transcriptionProviderBaseUrls = () =>
@@ -5550,6 +5548,7 @@ class IPCHandlers {
     });
 
     ipcMain.handle("sync-startup-preferences", async (event, prefs) => {
+      prefs = { ...prefs, useLocalWhisper: true };
       const setVars = {};
       const clearVars = [];
 
@@ -6482,7 +6481,8 @@ class IPCHandlers {
 
     // Honors system proxy via Electron's net stack. useSessionCookies:false so
     // Electron doesn't auto-attach jar cookies on top of our explicit headers.
-    const proxyFetch = (url, init = {}) => net.fetch(url, { ...init, useSessionCookies: false });
+    const proxyFetch = () =>
+      Promise.reject(Object.assign(new Error(localOnlyFailure().error), { code: "LOCAL_ONLY" }));
     const withPolicyHeaders = (headers) => withPolicyRequestHeaders(headers, app.getVersion());
     const handleCloudApiRequest = createCloudApiRequestHandler({
       getApiUrl,
@@ -6491,32 +6491,7 @@ class IPCHandlers {
       tokenStore,
       logger: debugLogger,
     });
-    try {
-      const ActivationDatabase = require("better-sqlite3");
-      const activationDb = new ActivationDatabase(
-        path.join(app.getPath("userData"), "meta-activation.db")
-      );
-      activationDb.pragma("foreign_keys = ON");
-      this.metaActivation = new MetaActivation({
-        db: activationDb,
-        getScope: () =>
-          accountScopeBinding.resolveActiveAccountScope({
-            ...tokenStore.getState(),
-            binding: accountScopeBinding.read(),
-          }),
-        request: createCloudApiRequestHandler({
-          getApiUrl,
-          getAppVersion: () => app.getVersion(),
-          tokenStore,
-          proxyFetch: (url, init) =>
-            proxyFetch(url, { ...init, signal: AbortSignal.timeout(10_000) }),
-        }),
-      });
-      this.metaActivation.start();
-    } catch {
-      // Marketing bookkeeping must never prevent ordinary dictation/startup.
-      debugLogger.warn("Activation storage unavailable");
-    }
+    // Marketing activation reporting is omitted from the local edition.
     ipcMain.handle("activation-close", async () => {
       await Promise.race([
         this.metaActivation?.close(),
@@ -6531,93 +6506,17 @@ class IPCHandlers {
       this.metaActivation?.finish(id, words)
     );
     ipcMain.handle("activation-cancel", (_event, id) => this.metaActivation?.cancel(id));
-    const workspacePolicyManager = createWorkspacePolicyManager({
-      cachePath: path.join(app.getPath("userData"), "workspace-policy.json"),
-      getApiUrl,
-      getAppVersion: () => app.getVersion(),
-      proxyFetch,
-      tokenStore,
-      broadcast: (snapshot) => broadcastToWindows("workspace-policy-changed", snapshot),
-      logger: debugLogger,
-    });
-    registerProductHelpIpc({
-      ipcMain,
-      fetch: proxyFetch,
-      canLookup: createConnectorPolicyResolver({
-        getAuthHeader: createConnectorAuthLookup({
-          hasBearerToken: () => Boolean(tokenStore.get()),
-          windowFor: (event) => BrowserWindow.fromWebContents(event.sender),
-          authHeaderFor: getAuthHeaderFromWindow,
-        }),
-        getPolicy: (options) => workspacePolicyManager.getPolicy(options),
-        peekPolicy: (options) => workspacePolicyManager.peekPolicy(options),
-        getAuthGeneration: () => tokenStore.getState().generation,
-        classifySnapshot: (snapshot) => remoteHelpPolicyState(snapshot, app.getVersion()),
-        fallbackOnUnavailable: true,
-      }),
-      getBasics: () => ({
-        // checkAccess reads the cached permission verdict; it never requests access.
-        systemAudioPermission:
-          process.platform === "darwin"
-            ? this.audioTapManager?.checkAccess()?.status || "unknown"
-            : "unknown",
-        platform: process.platform,
-        version: app.getVersion(),
-        microphonePermission:
-          process.platform === "linux"
-            ? "unknown"
-            : systemPreferences.getMediaAccessStatus("microphone"),
-        accessibilityPermission:
-          process.platform === "darwin"
-            ? systemPreferences.isTrustedAccessibilityClient(false)
-              ? "granted"
-              : "not-granted"
-            : "not-applicable",
-      }),
-    });
-    if (this.connectorManager) {
-      registerConnectorIpc({
-        ipcMain,
-        manager: this.connectorManager,
-        getPolicyState: createConnectorPolicyResolver({
-          getAuthHeader: createConnectorAuthLookup({
-            hasBearerToken: () => Boolean(tokenStore.get()),
-            windowFor: (event) => BrowserWindow.fromWebContents(event.sender),
-            authHeaderFor: getAuthHeaderFromWindow,
-          }),
-          getPolicy: (options) => workspacePolicyManager.getPolicy(options),
-          peekPolicy: (options) => workspacePolicyManager.peekPolicy(options),
-          getAuthGeneration: () => tokenStore.getState().generation,
-        }),
-        // The account bound to the credential in use, the same binding
-        // get-active-account-scope serves (not the separately synced
-        // database scope, which lags a sign-in or account switch).
-        getAccountScope: () =>
-          accountScopeBinding.resolveActiveAccountScope({
-            ...tokenStore.getState(),
-            binding: accountScopeBinding.read(),
-          }),
-        findContacts: (query) =>
-          searchContacts(this.databaseManager.getContactLookupSources(), query),
-        noteAttendees: createNoteAttendeesLookup({
-          getContactLookupSources: () => this.databaseManager.getContactLookupSources(),
-          getCalendarEventById: (id) => this.databaseManager.getCalendarEventById(id),
-          getSpeakerMappings: (noteId) => this.databaseManager.getSpeakerMappings(noteId),
-          getSpeakerProfiles: () => this.databaseManager.getSpeakerProfiles(),
-          getGmailAddress: async () =>
-            (await this.connectorManager.connectorStatus("gmail"))?.accountLabel ?? null,
-        }),
-      });
-    }
-    this.enterpriseIdentityManager = createEnterpriseIdentityManager({
-      cachePath: path.join(app.getPath("userData"), "managed-enterprise-config.json"),
-      getApiUrl,
-      getAppVersion: () => app.getVersion(),
-      proxyFetch,
-      tokenStore,
-      broadcast: (snapshot) => broadcastToWindows("managed-enterprise-config-changed", snapshot),
-      logger: debugLogger,
-    });
+    const workspacePolicyManager = {
+      getPolicy: async () => ({ managed: false, policy: null }),
+      peekPolicy: () => ({ managed: false, policy: null }),
+    };
+    this.enterpriseIdentityManager = {
+      clear() {},
+      getConfig: async () => localOnlyFailure(),
+      resolveProvider: async () => {
+        throw new Error(localOnlyFailure().error);
+      },
+    };
     const resolveEnterpriseRuntime = async (event, provider, model, config = {}) => {
       const manual = {
         provider,
@@ -6872,6 +6771,12 @@ class IPCHandlers {
     });
 
     ipcMain.handle("retry-transcription", async (event, id, settings) => {
+      settings = {
+        ...settings,
+        useLocalWhisper: true,
+        transcriptionMode: "local",
+        managed: undefined,
+      };
       const buffer = this.audioStorageManager.getAudioBuffer(id);
       if (!buffer) return { success: false, error: "Audio file not found" };
       let providerErrorContext = null;

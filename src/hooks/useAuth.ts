@@ -69,7 +69,7 @@ async function refreshManagedEnterpriseIdentity(accountId: string, authGeneratio
   refresh(accountId, authGeneration);
 }
 
-export function useAuth() {
+function useAccountAuth() {
   const useSession = authClient?.useSession ?? useStaticSession;
   const { data: ambientSession, isPending, error: sessionError, refetch } = useSession();
   const accountRevision = useSyncExternalStore(
@@ -251,3 +251,21 @@ export function useAuth() {
     refetch,
   };
 }
+
+// Runtime identity is fixed by preload before React mounts. The local edition
+// never subscribes to Better Auth or starts account reconciliation effects.
+function useLocalAuth(): ReturnType<typeof useAccountAuth> {
+  return {
+    isSignedIn: false,
+    isGracePeriodOnly: false,
+    isLoaded: true,
+    session: null,
+    user: null,
+    refetch: async () => null,
+  };
+}
+
+export const useAuth =
+  typeof window !== "undefined" && window.electronAPI?.localOnly === true
+    ? useLocalAuth
+    : useAccountAuth;

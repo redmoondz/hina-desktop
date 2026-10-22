@@ -2,12 +2,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const Module = require("node:module");
 
-// process-anthropic-reasoning's catch block used to return the raw error
-// message/messageKey only, so a network failure (proxyFetch rejecting before
-// any HTTP response, e.g. DNS/TLS) reached the renderer as a bare, unclassified
-// Error instead of a translatable PROVIDER_UNREACHABLE. This exercises the
-// real handler closure against a stubbed Electron `net.fetch`, following the
-// pattern in test/helpers/retryTranscriptionHandler.test.js.
+// Exercise the actual registered IPC boundary. Remote provider work must never
+// read credentials or reach the network, regardless of provider availability.
 const handlersModulePath = require.resolve("../../src/helpers/ipcHandlers");
 const originalLoad = Module._load;
 
@@ -75,7 +71,7 @@ function buildFakeThis() {
   const target = {
     sessionId: "test-session",
     environmentManager: {
-      getAnthropicKey: () => "sk-ant-test-key",
+      getAnthropicKey: () => assert.fail("cloud inference read a provider key"),
     },
   };
   return new Proxy(target, {
@@ -97,62 +93,16 @@ test.after(() => {
   Module._load = originalLoad;
 });
 
-// Electron's net.fetch rejects with a plain Error carrying the Chromium net
-// error as its message and no code.
-test("a network failure (net::ERR_INTERNET_DISCONNECTED) resolves classified instead of a bare error", async () => {
-  fetchBehavior = async () => {
-    throw new Error("net::ERR_INTERNET_DISCONNECTED");
-  };
-
+test("Anthropic reasoning is denied before offline network work", async () => {
+  fetchBehavior = () => assert.fail("cloud inference reached the network");
   const result = await anthropicHandler({ sender: {} }, "hello", "claude-sonnet-5", null, {});
-
   assert.equal(result.success, false);
-  assert.equal(result.code, "PROVIDER_UNREACHABLE");
-  assert.equal(result.messageKey, "providerErrors.unreachable");
-  assert.equal(result.surface, "llm");
-  assert.match(result.error, /Couldn't reach Anthropic/);
+  assert.equal(result.code, "LOCAL_ONLY");
 });
 
-test("an Anthropic HTTP failure resolves with classified IPC fields", async () => {
-  fetchBehavior = async () =>
-    new Response(
-      '{"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API."}}',
-      { status: 400, headers: { "request-id": "req_9" } }
-    );
-
+test("provider health cannot bypass the local-only reasoning boundary", async () => {
+  fetchBehavior = () => assert.fail("cloud inference reached a healthy provider");
   const result = await anthropicHandler({ sender: {} }, "hello", "claude-sonnet-5", null, {});
-
-  assert.equal(result.success, false);
-  assert.equal(result.code, "PROVIDER_QUOTA_EXHAUSTED");
-  assert.equal(result.messageKey, "providerErrors.quotaExhausted");
-  assert.deepEqual(result.messageParams, { provider: "Anthropic" });
-  assert.equal(result.settingsTarget, "llms");
-  assert.equal(result.status, 400);
-  assert.equal(result.technicalDetails.requestId, "req_9");
-  assert.equal(result.error, "Your Anthropic account is out of credit.");
-});
-
-test("an already-classified failure (missing key) passes through unchanged", async () => {
-  const noKeyThis = {
-    sessionId: "test-session",
-    environmentManager: { getAnthropicKey: () => "" },
-  };
-  const proxiedThis = new Proxy(noKeyThis, {
-    get: (t, prop) => (prop in t ? t[prop] : anything()),
-  });
-  const handlersForNoKey = new Map();
-  const originalHandle = electronStub.ipcMain.handle;
-  electronStub.ipcMain.handle = (channel, fn) => handlersForNoKey.set(channel, fn);
-  delete require.cache[handlersModulePath];
-  const IPCHandlers = require(handlersModulePath);
-  const Ctor = IPCHandlers.default || IPCHandlers;
-  Ctor.prototype.setupHandlers.call(proxiedThis);
-  electronStub.ipcMain.handle = originalHandle;
-
-  const handler = handlersForNoKey.get("process-anthropic-reasoning");
-  const result = await handler({ sender: {} }, "hello", "claude-sonnet-5", null, {});
-
-  assert.equal(result.success, false);
-  assert.equal(result.code, "API_KEY_MISSING");
-  assert.equal(result.messageKey, "providerErrors.keyMissing");
+  assert.equal(result.code, "LOCAL_ONLY");
+  assert.equal(handlers.get("get-anthropic-key")().code, "LOCAL_ONLY");
 });

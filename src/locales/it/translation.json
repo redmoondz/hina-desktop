@@ -4,7 +4,7 @@
       "sectionTitle": "Lingua",
       "sectionDescription": "Imposta separatamente la lingua dell'interfaccia e quella di trascrizione",
       "uiLabel": "Lingua dell'interfaccia",
-      "uiDescription": "Scegli la lingua usata nell'interfaccia di OpenWhispr",
+      "uiDescription": "Choose the language used throughout Hina Desktop's interface",
       "transcriptionLabel": "Lingua di trascrizione",
       "transcriptionDescription": "Scegli la lingua che parli per una trascrizione più accurata",
       "chineseScriptLabel": "Scrittura cinese (dettatura)",
@@ -62,14 +62,14 @@
       "show": "Mostra pannello dettatura",
       "hide": "Nascondi pannello dettatura"
     },
-    "openControlPanel": "Apri pannello di controllo",
-    "hideControlPanel": "Nascondi pannello di controllo",
-    "quit": "Esci da OpenWhispr",
-    "tooltip": "OpenWhispr - Dettatura vocale"
+    "openControlPanel": "Open Settings",
+    "hideControlPanel": "Hide Settings",
+    "quit": "Quit Hina Desktop",
+    "tooltip": "Hina Desktop - Local Voice Dictation"
   },
   "menu": {
-    "appLabel": "OpenWhispr",
-    "quit": "Esci da OpenWhispr",
+    "appLabel": "Hina Desktop",
+    "quit": "Quit Hina Desktop",
     "speech": "Voce",
     "settings": "Impostazioni...",
     "help": "Aiuto",
@@ -87,8 +87,8 @@
       "message": "Impossibile aprire il link nel browser:\n{{url}}\n\nErrore: {{error}}"
     },
     "loadFailure": {
-      "title": "Caricamento di OpenWhispr non riuscito",
-      "message": "OpenWhispr non ha potuto caricare la sua interfaccia.",
+      "title": "Hina Desktop failed to load",
+      "message": "Hina Desktop could not load its UI.",
       "detail": {
         "window": "Finestra: {{windowName}}",
         "error": "Errore {{errorCode}}: {{errorDescription}}",
@@ -99,17 +99,17 @@
   },
   "startup": {
     "error": {
-      "title": "Errore di avvio di OpenWhispr",
+      "title": "Hina Desktop Startup Error",
       "message": "Impossibile avviare l'applicazione:\n\n{{error}}\n\nSegnala questo problema."
     },
     "globeHotkey": {
       "title": "Tasto Globe non disponibile",
-      "message": "OpenWhispr non è riuscito ad attivare il tasto Globe.",
+      "message": "Hina Desktop could not activate the Globe key hotkey.",
       "details": {
         "unknown": "Errore sconosciuto durante l'avvio del listener Globe.",
         "fallback": "La scorciatoia Globe resterà disabilitata; le scorciatoie esistenti continueranno a funzionare.",
         "devHint": "Esegui `npm run compile:globe` e ricompila l'app per rigenerare il binario.",
-        "reinstallHint": "Reinstalla OpenWhispr o contatta il supporto se il problema persiste."
+        "reinstallHint": "Try reinstalling Hina Desktop or contact support if the issue persists."
       }
     }
   },
@@ -164,7 +164,7 @@
     "close": "Chiudi"
   },
   "windows": {
-    "pttUnavailable": "Il listener di tasti di OpenWhispr non è disponibile."
+    "pttUnavailable": "Hina Desktop's key listener isn't available."
   },
   "common": {
     "continue": "Continua",
@@ -220,7 +220,7 @@
   "onboarding": {
     "rehaul": {
       "permissions": {
-        "title": "Configura OpenWhispr in 3 minuti",
+        "title": "Set up Hina Desktop in 3 minutes",
         "microphoneDescription": "Ascolta solo mentre registri.",
         "accessibilityDescription": "Incolla il testo in qualsiasi app.",
         "systemAudioTitle": "Audio di Sistema",
@@ -233,7 +233,7 @@
         "title": "Quali lingue parli?",
         "titleLineOne": "Quali lingue",
         "titleLineTwo": "parli?",
-        "description": "Seleziona tutte le opzioni pertinenti. Questo aiuta OpenWhispr a riconoscere i cambi di lingua con maggiore precisione."
+        "description": "Select all that apply. This helps Hina Desktop recognize language switches more accurately."
       },
       "dictationHotkey": {
         "title": "Scegli la tua scorciatoia per dettare",
@@ -243,10 +243,10 @@
         "activation": "Toccare o tenere premuto?"
       },
       "assistantHotkey": {
-        "title": "Configura OpenWhispr Assistant",
+        "title": "Set up Hina Desktop Assistant",
         "titleLineOne": "Configura",
-        "titleLineTwo": "OpenWhispr Assistant",
-        "description": "Pronuncia una richiesta. OpenWhispr Assistant scrive il risultato per te."
+        "titleLineTwo": "Hina Desktop Assistant",
+        "description": "Speak a request. Hina Desktop Assistant writes the result for you."
       },
       "hotkey": {
         "capture": "Premi il tasto che vuoi usare",
@@ -258,15 +258,15 @@
         "title": "Prova la tua prima dettatura",
         "titleLineOne": "Prova la tua",
         "titleLineTwo": "prima dettatura",
-        "description": "Premi {{hotkey}} e inizia a parlare. OpenWhispr trasformerà la tua voce in testo.",
-        "founder": "Ciao, sono Gabe, il fondatore. Grazie per provare OpenWhispr!",
-        "prompt": "Clicca nel riquadro qui sotto, premi la tua scorciatoia e dimmi: cosa vorresti che OpenWhispr facesse per te?",
-        "placeholder": "Clicca qui, poi premi la tua scorciatoia. OpenWhispr scrive in qualsiasi campo di testo."
+        "description": "Press {{hotkey}} and start speaking. Hina Desktop will turn your voice into text.",
+        "founder": "Hey, I’m Gabe, the founder. Thanks for trying Hina Desktop!",
+        "prompt": "Click the box below, press your shortcut, and tell me: what would you love Hina Desktop to do for you?",
+        "placeholder": "Click here, then press your shortcut. Hina Desktop types into any text box."
       },
       "assistantDemo": {
-        "title": "Scopri OpenWhispr Assistant",
+        "title": "Meet Hina Desktop Assistant",
         "titleLineOne": "Ecco",
-        "titleLineTwo": "OpenWhispr Assistant",
+        "titleLineTwo": "Hina Desktop Assistant",
         "email": {
           "subject": "Un caffè la prossima settimana?",
           "senderName": "Maria Alvarez",
@@ -300,13 +300,13 @@
         "typing": "Sta scrivendo…"
       },
       "notes": {
-        "title": "Registra le riunioni senza bot con OpenWhispr Notes",
+        "title": "Record meetings without a bot with Hina Desktop Notes",
         "titleLineOne": "Registra le riunioni senza bot",
-        "titleLineTwoPrefix": "con OpenWhispr",
+        "titleLineTwoPrefix": "with Hina Desktop",
         "titleLineTwoBrand": "Notes",
-        "description": "OpenWhispr trasforma la tua conversazione in note chiare. Nessun bot per riunioni entra nella tua chiamata.",
+        "description": "Hina Desktop turns your conversation into clear notes. No meeting bot joins your call.",
         "hero": {
-          "description": "Registra la riunione e lascia che OpenWhispr trasformi la conversazione in note chiare e organizzate.",
+          "description": "Record your meeting and let Hina Desktop turn the conversation into clear, organized notes.",
           "chat": "Chatta con le note della riunione",
           "transcript": "Rivedi la trascrizione completa",
           "speakers": "Scopri chi ha detto cosa"
@@ -322,16 +322,16 @@
         }
       },
       "setupChoice": {
-        "title": "Scegli la tua configurazione di OpenWhispr",
+        "title": "Choose your Hina Desktop setup",
         "titleLineOne": "Scegli la tua configurazione",
-        "titleLineTwo": "di OpenWhispr",
+        "titleLineTwo": "Hina Desktop setup",
         "description": "Scegli l’opzione più adatta al tuo modo di lavorare.",
         "unavailable": {
           "title": "Nessuna opzione di configurazione disponibile",
           "description": "I criteri del tuo spazio di lavoro non consentono una configurazione completa della trascrizione e dell’IA. Contatta l’amministratore."
         },
         "cloud": {
-          "title": "OpenWhispr Cloud",
+          "title": "Hina Desktop Cloud",
           "description": "Ricevi 2.000 parole gratis ogni settimana. Le tue impostazioni restano sincronizzate tra i dispositivi.",
           "continue": "Continua gratis",
           "signIn": "Accedi per usare Cloud",
@@ -479,14 +479,14 @@
       "accessibilityTitle": "Accessibilità",
       "accessibilityDescription": "Digita il testo finale direttamente nell'app in cui ti trovi — documenti, email, chat.",
       "testAndGrant": "Testa e concedi",
-      "requiredForApp": "Necessario per usare OpenWhispr",
+      "requiredForApp": "Required for Hina Desktop to work",
       "microphoneRequired": "Accesso al microfono richiesto",
       "openSystemSettings": "Apri Impostazioni di Sistema",
       "systemAudioTitle": "Audio di Sistema",
       "systemAudioDescription": "Permette al registratore delle riunioni di sentire l'altro lato delle tue chiamate — riunioni, lezioni, podcast. Puoi attivarlo più tardi nelle Impostazioni.",
       "optional": "Facoltativo",
       "recommended": "Consigliato",
-      "accessibilityTroubleshooting": "In Impostazioni di Sistema → Accessibilità, disattiva l'interruttore di OpenWhispr e riattivalo. Se OpenWhispr non compare nell'elenco, fai clic su + e aggiungilo dalla cartella Applicazioni. Ancora problemi? Scrivi a support@openwhispr.com."
+      "accessibilityTroubleshooting": "In System Settings → Accessibility, switch Hina Desktop's toggle off and back on. If Hina Desktop isn't in the list at all, click + and add it from your Applications folder. Still stuck? Email support@openwhispr.com."
     },
     "transcription": {
       "title": "Configurazione trascrizione",
@@ -506,18 +506,18 @@
       "textareaPlaceholder": "Clicca qui e usa la scorciatoia per dettare..."
     },
     "connectivity": {
-      "title": "Non riusciamo a raggiungere OpenWhispr Cloud da questa rete",
+      "title": "We can't reach Hina Desktop Cloud from this network",
       "body": "{{cause}} Puoi passare al motore locale o continuare e riprovare più tardi.",
       "useLocal": "Usa motore locale",
       "continue": "Continua comunque"
     },
     "useCase": {
-      "title": "Come userai OpenWhispr?",
+      "title": "How will you use Hina Desktop?",
       "titleLineOne": "Come userai",
-      "titleLineTwo": "OpenWhispr?",
+      "titleLineTwo": "use Hina Desktop?",
       "description": "Scegli tutte le opzioni pertinenti. Adatteremo la configurazione.",
       "noteLabel": "C'è altro che vorresti farci sapere?",
-      "notePlaceholder": "Raccontaci come pensi di usare OpenWhispr (facoltativo)",
+      "notePlaceholder": "Tell us how you plan to use Hina Desktop (Optional)",
       "proceedToSetup": "Continua la configurazione",
       "options": {
         "dictation": {
@@ -550,13 +550,13 @@
     "meeting": {
       "title": "Note delle riunioni",
       "description": "Cattura e riassumi le tue riunioni",
-      "autoDetect": "OpenWhispr rileva automaticamente quando sei in riunione e ti propone di avviare le note — nulla viene registrato senza di te.",
+      "autoDetect": "Hina Desktop automatically detects when you're in a meeting and offers to start notes — nothing is recorded without you.",
       "hotkeyLabel": "Scorciatoia riunione",
       "hotkeyHint": "Facoltativa — premila in qualsiasi riunione per avviare subito una nota."
     },
     "finish": {
       "title": "Tutto pronto",
-      "cloudDescription": "Sei su OpenWhispr Cloud: veloce, preciso, zero conservazione dei dati e 2.000 parole gratis a settimana. Preferisci tutto sul tuo dispositivo? Passa all'elaborazione locale nelle Impostazioni.",
+      "cloudDescription": "You're on Hina Desktop Cloud — fast, accurate, zero data retention, 2,000 words free every week. Prefer everything on-device? Switch to local processing in Settings.",
       "localDescription": "Sei configurato con l'elaborazione locale o con la tua chiave. Regola come viene elaborato il tuo audio in qualsiasi momento nelle Impostazioni.",
       "cleanupNote": "La pulizia del testo con IA usa impostazioni predefinite sensate. Puoi regolarla in qualsiasi momento nelle Impostazioni.",
       "openSettings": "Apri Impostazioni",
@@ -591,20 +591,20 @@
       "return": "Torna alla configurazione",
       "missingApp": "Oppure seleziona l’app con +",
       "failed": "Impossibile verificare l’accesso.",
-      "microphone": "Attiva OpenWhispr in Microfono.",
-      "accessibility": "Trascina OpenWhispr in Accessibilità e attivalo.",
-      "systemAudio": "Attiva OpenWhispr in Solo registrazione audio di sistema.",
-      "screenContext": "Trascina OpenWhispr in Registrazione schermo e audio di sistema e attivalo.",
+      "microphone": "Turn on Hina Desktop in Microphone.",
+      "accessibility": "Drag Hina Desktop into Accessibility, then turn it on.",
+      "systemAudio": "Turn on Hina Desktop under System Audio Recording Only.",
+      "screenContext": "Drag Hina Desktop into Screen & System Audio Recording, then turn it on.",
       "settings": "Impostazioni",
       "check": "Ricontrolla",
       "restart": "Riavvia l’app",
-      "restartRequired": "Riavvia OpenWhispr per applicare l’accesso allo schermo."
+      "restartRequired": "Restart Hina Desktop to apply screen access."
     }
   },
   "streaming": {
     "errors": {
       "cloudUnreachable": {
-        "title": "Impossibile raggiungere OpenWhispr Cloud",
+        "title": "Can't reach Hina Desktop Cloud",
         "generic": "La richiesta di rete è fallita. Controlla la connessione.",
         "dnsBlocked": "Il DNS non risolve openwhispr.com — potrebbe esserci un ad blocker o un filtro.",
         "refused": "Connessione rifiutata — probabilmente un firewall o una VPN.",
@@ -617,13 +617,13 @@
   "controlPanel": {
     "updateRequiredByOrg": {
       "title": "Aggiornamento richiesto",
-      "description": "La tua organizzazione richiede OpenWhispr {{version}} o versioni successive. Aggiorna l'app."
+      "description": "Your organization requires Hina Desktop {{version}} or newer. Please update the app."
     },
     "update": {
       "readyTitle": "Aggiornamento pronto da installare",
       "readyDescription": "Fai clic su 'Installa aggiornamento' per riavviare con l'ultima versione.",
       "installTitle": "Installa aggiornamento",
-      "installDescription": "OpenWhispr verrà riavviato per applicare l'aggiornamento. Il lavoro in corso verrà salvato.",
+      "installDescription": "Hina Desktop will restart to apply the update. Any in-progress work will be saved.",
       "couldNotInstallTitle": "Impossibile installare l'aggiornamento",
       "couldNotInstallDescription": "Qualcosa è andato storto. Riprova.",
       "couldNotDownloadTitle": "Impossibile scaricare l'aggiornamento",
@@ -638,7 +638,7 @@
     },
     "accessibilityMissing": {
       "title": "Autorizzazioni di accessibilità necessarie",
-      "description": "Abbiamo rilevato che OpenWhispr ha bisogno delle autorizzazioni di accessibilità per funzionare correttamente. Abilitale qui sotto."
+      "description": "We've detected that Hina Desktop needs accessibility permissions to work properly. Please enable them below."
     },
     "billing": {
       "pastDueTitle": "Non siamo riusciti a elaborare il pagamento",
@@ -734,7 +734,7 @@
     },
     "cloudNudge": {
       "title": "Accesso effettuato",
-      "description": "La dettatura usa ancora la tua configurazione. Puoi passare a OpenWhispr Cloud in qualsiasi momento.",
+      "description": "Dictation still runs on your own setup. You can switch to Hina Desktop Cloud anytime.",
       "action": "Apri Impostazioni"
     }
   },
@@ -846,7 +846,7 @@
           "modelNotFound": "AWS Bedrock non ha trovato il modello selezionato nella regione {{region}}. Controlla l’ID del modello e la sua disponibilità in quella regione.",
           "configurationRejected": "AWS Bedrock ha rifiutato la configurazione del modello per la regione {{region}}. Controlla l’ID del modello, il profilo di inferenza e la regione.",
           "notConfigured": "AWS Bedrock non è configurato correttamente. Controlla la regione e le credenziali AWS.",
-          "serviceUnavailable": "AWS Bedrock è temporaneamente non disponibile a causa dell’elevata richiesta. È un problema del servizio AWS, non un’interruzione di OpenWhispr. Riprova tra qualche minuto.",
+          "serviceUnavailable": "AWS Bedrock is temporarily unavailable due to high demand. This is an AWS service issue, not an Hina Desktop outage. Please try again in a few minutes.",
           "throttled": "AWS Bedrock sta limitando temporaneamente le richieste perché ne riceve troppe. Attendi un momento e riprova. Se il problema continua, chiedi all’amministratore AWS di controllare l’utilizzo e le quote di Bedrock.",
           "timeout": "AWS Bedrock non ha risposto in tempo. Riprova. Se il problema continua, controlla la connessione Internet e lo stato del servizio AWS Bedrock.",
           "network": "Impossibile raggiungere AWS Bedrock. Controlla la connessione Internet e riprova.",
@@ -923,7 +923,7 @@
   },
   "hooks": {
     "audioRecording": {
-      "cleanupSignedOut": "La pulizia IA usa OpenWhispr Cloud, ma non hai effettuato l'accesso.",
+      "cleanupSignedOut": "AI cleanup uses Hina Desktop Cloud, but you're signed out.",
       "cleanupUnconfigured": "La pulizia IA è attiva, ma non è configurato alcun modello di pulizia.",
       "errorTitles": {
         "sessionExpired": "Sessione scaduta",
@@ -958,7 +958,7 @@
         "description": "Non è stato possibile trascrivere una parte della registrazione."
       },
       "errorDescriptions": {
-        "sessionExpired": "La tua sessione OpenWhispr Cloud non è disponibile. Effettua di nuovo l'accesso dalle Impostazioni.",
+        "sessionExpired": "Your Hina Desktop Cloud session is unavailable. Please sign in again from Settings.",
         "offline": "Sei offline. La trascrizione cloud richiede una connessione Internet.",
         "dailyLimitReached": "Hai raggiunto il limite di trascrizioni di oggi. Riprova domani o aggiorna il tuo piano.",
         "providerRateLimited": "Il tuo provider di trascrizione ha limitato la richiesta. Attendi un momento e riprova.",
@@ -995,22 +995,22 @@
         "notAppliedTitle": "Modifica della selezione non applicata",
         "changed": "Il testo selezionato o l’app di destinazione è cambiato durante l’elaborazione. Non è stato sostituito nulla.",
         "expired": "La modifica è scaduta. Seleziona di nuovo il testo e riprova.",
-        "pasteFailed": "OpenWhispr ha generato la modifica, ma non ha potuto sostituire il testo selezionato.",
-        "modifiersHeld": "OpenWhispr ha generato la modifica, ma un tasto modificatore (come Ctrl o Maiusc) era ancora premuto, quindi non è stata applicata. La modifica è negli appunti.",
-        "modifiersHeldClipboardFailed": "OpenWhispr ha generato la modifica, ma un tasto modificatore (come Ctrl o Maiusc) era ancora premuto, quindi non è stata applicata e non è stato possibile copiarla negli appunti.",
-        "unavailable": "OpenWhispr non ha potuto leggere in sicurezza il testo selezionato. Controlla i permessi di accessibilità o automazione.",
+        "pasteFailed": "Hina Desktop generated the edit but could not replace the selected text.",
+        "modifiersHeld": "Hina Desktop generated the edit, but a modifier key (like Ctrl or Shift) was still held down, so it was not applied. The edit is on the clipboard.",
+        "modifiersHeldClipboardFailed": "Hina Desktop generated the edit, but a modifier key (like Ctrl or Shift) was still held down, so it was not applied, and it could not be copied to the clipboard either.",
+        "unavailable": "Hina Desktop could not safely read the selected text. Check accessibility or input automation permissions and try again.",
         "tooLarge": "La selezione è troppo grande. Seleziona al massimo 6.000 caratteri.",
         "reasoningFailed": "L’IA non ha potuto completare la modifica. Il testo originale non è stato cambiato.",
         "invalidResponse": "L’IA ha restituito una risposta di modifica non valida. Non è stato sostituito nulla. Seleziona il testo e riprova.",
         "emptyResponse": "L’IA ha restituito una modifica vuota. Non è stato sostituito nulla. Prova con un’istruzione più specifica.",
         "truncatedResponse": "L’IA si è fermata prima di completare la modifica. Non è stato sostituito nulla. Prova a selezionare meno testo.",
-        "wlCopyMissing": "OpenWhispr ha generato la modifica, ma su questo desktop le app Wayland possono leggere il testo incollato solo tramite wl-copy. Installa wl-clipboard per applicare le modifiche.",
-        "wlCopyFailed": "OpenWhispr ha generato la modifica, ma wl-copy non è riuscito a copiarla per le app Wayland, quindi non è stata applicata."
+        "wlCopyMissing": "Hina Desktop generated the edit, but on this desktop Wayland apps can only read pasted text through wl-copy. Install wl-clipboard to apply edits.",
+        "wlCopyFailed": "Hina Desktop generated the edit, but wl-copy couldn't copy it for Wayland apps, so it wasn't applied."
       },
       "pastePermission": {
         "title": "Consenti di incollare automaticamente",
-        "description": "Abilita OpenWhispr in Impostazioni di Sistema → Privacy e sicurezza → Accessibilità.",
-        "settingsFailed": "Impossibile aprire le impostazioni. Apri Impostazioni di Sistema → Privacy e sicurezza → Accessibilità e abilita OpenWhispr.",
+        "description": "Enable Hina Desktop in System Settings → Privacy & Security → Accessibility.",
+        "settingsFailed": "Couldn't open Settings. Open System Settings → Privacy & Security → Accessibility and enable Hina Desktop.",
         "manualPaste": "Copia il testo qui sotto, poi premi {{shortcut}} per incollarlo.",
         "openSettings": "Apri impostazioni",
         "copyToClipboard": "Copia negli appunti",
@@ -1019,7 +1019,7 @@
       "pasteFailed": {
         "title": "Impossibile incollare automaticamente"
       },
-      "interruptedRecordingRecovered": "Recuperata dopo la chiusura di OpenWhispr prima della fine di questa dettatura.",
+      "interruptedRecordingRecovered": "Recovered after Hina Desktop closed before this dictation finished.",
       "waylandClipboard": {
         "title": "Trascrizione non incollata",
         "wlCopyMissing": "Su questo desktop, le app Wayland possono leggere il testo incollato solo tramite wl-copy. Installa wl-clipboard per incollare le tue dettature.",
@@ -1096,7 +1096,7 @@
       "micErrors": {
         "accessFailed": "Accesso al microfono non riuscito. Riprova.",
         "noMicrophones": "Nessun microfono rilevato. Collega o seleziona un microfono in {{settingsPath}}.",
-        "permissionDenied": "Permesso negato. Apri {{privacyPath}} e consenti OpenWhispr.",
+        "permissionDenied": "Permission was denied. Open {{privacyPath}} and allow Hina Desktop.",
         "couldNotStart": "Impossibile avviare il microfono selezionato. Scegli un dispositivo in {{settingsPath}} e ripeti il test.",
         "noActiveInput": "Nessun ingresso audio attivo trovato. Scegli un microfono in {{settingsPath}}.",
         "unknown": "Accesso al microfono non riuscito: {{error}}. Seleziona un altro dispositivo e riprova.",
@@ -1125,8 +1125,8 @@
         "accessibilityNeeded": "Concedi i permessi di accessibilità nelle impostazioni di sistema per abilitare l'incollaggio automatico.",
         "windowsReady": "Windows non richiede permessi speciali per l'incollaggio automatico. È tutto pronto!",
         "linuxReadyWithMethod": "L'incollaggio automatico è disponibile tramite {{method}}. È tutto pronto!",
-        "waylandClipboardMode": "L'incollaggio automatico non è disponibile in questa sessione Wayland. OpenWhispr copierà il testo negli appunti e potrai incollare con Ctrl+V.",
-        "optionalPasteTool": "Per l'incollaggio automatico, installa {{tool}}:\n\n{{installCmd}}{{waylandNote}}\n\nAnche senza questo puoi usare OpenWhispr: il testo verrà copiato negli appunti e potrai incollare con Ctrl+V."
+        "waylandClipboardMode": "Automatic pasting is not available on this Wayland session. Hina Desktop will copy text to your clipboard and you can paste with Ctrl+V.",
+        "optionalPasteTool": "For automatic pasting, install {{tool}}:\n\n{{installCmd}}{{waylandNote}}\n\nWithout this, you can still use Hina Desktop - text will be copied to your clipboard and you can paste with Ctrl+V."
       },
       "alerts": {
         "accessibilityNeeded": "Permessi di accessibilità necessari! Concedili nelle impostazioni di sistema."
@@ -1139,7 +1139,7 @@
         "defaultPasteTool": "xdotool",
         "xdotoolXwayland": "xdotool (app XWayland)"
       },
-      "accessibilityTestText": "Test accessibilità OpenWhispr",
+      "accessibilityTestText": "Hina Desktop accessibility test",
       "warning": {
         "messages": {
           "macos": "Controlla le impostazioni Audio per selezionare il dispositivo di ingresso",
@@ -1217,7 +1217,7 @@
       "emailRequired": "Inserisci la tua email di lavoro per usare l’SSO.",
       "failed": "Accesso SSO non riuscito. Riprova.",
       "companySignInTitle": "Usa l'accesso aziendale",
-      "requiredDescription": "{{domain}} richiede l'SSO per OpenWhispr.",
+      "requiredDescription": "{{domain}} requires SSO for Hina Desktop.",
       "availableDescription": "Il tuo account {{domain}} è pronto per l'SSO aziendale.",
       "useEmailInstead": "Usa invece e-mail e password"
     },
@@ -1229,7 +1229,7 @@
       "protocolUnavailable": "Accesso dal browser non disponibile — registra di nuovo il protocollo openwhispr:// nelle impostazioni Applicazioni predefinite del sistema."
     },
     "welcomeSubtitle": "Il potere della tua voce. Alle tue condizioni.",
-    "welcomeTitle": "Benvenuto in OpenWhispr"
+    "welcomeTitle": "Welcome to Hina Desktop"
   },
   "cleanupPrompt": "Correzione",
   "developerSection": {
@@ -1452,15 +1452,15 @@
     "recheckChecking": "Verifica...",
     "title": "Incollaggio automatico",
     "usingMethodPrefix": "In uso",
-    "waylandClipboardDescription": "L'incollaggio automatico non è disponibile in questa sessione Wayland. OpenWhispr copierà il testo negli appunti, così potrai incollare manualmente con Ctrl+V.",
+    "waylandClipboardDescription": "Automatic pasting isn't available on this Wayland session. Hina Desktop will copy text to your clipboard so you can paste manually with Ctrl+V.",
     "waylandClipboardTitle": "Modalità appunti su Wayland",
     "windowsReady": "Windows supporta l'incollaggio automatico senza configurazione aggiuntiva!",
-    "withoutToolPrefix": "Senza questo strumento, OpenWhispr copierà il testo negli appunti. Potrai poi incollare manualmente con Ctrl+V.",
+    "withoutToolPrefix": "Without this tool, Hina Desktop will copy text to your clipboard. You can then paste manually with Ctrl+V.",
     "wtypeCosmicTerminalsDescription": "Su COSMIC, i terminali come Warp ricevono il testo incollato solo tramite wtype. Nelle altre app l'incollaggio funziona già senza.",
     "wtypeFallbackDescription": "wtype è il metodo di incollaggio automatico preferito per questo compositor wlroots. È disponibile un'alternativa, ma potrebbe essere meno affidabile.",
     "xwaylandAppsOnly": "l'incollaggio automatico funziona solo per le app XWayland",
     "wlClipboardTitle": "Installa wl-clipboard per incollare nelle app Wayland",
-    "wlClipboardDescription": "Su questo desktop, le app Wayland possono leggere il testo copiato da OpenWhispr solo tramite wl-copy. Per incollarvi la dettatura, installa wl-clipboard:"
+    "wlClipboardDescription": "On this desktop, Wayland apps can only read text that Hina Desktop copies through wl-copy. To paste dictation into them, install wl-clipboard:"
   },
   "promptStudio": {
     "common": {
@@ -1509,7 +1509,7 @@
       "none": "Nessuno",
       "outputLabel": "Output",
       "processing": "Elaborazione...",
-      "openwhisprCloud": "OpenWhispr Cloud",
+      "openwhisprCloud": "Hina Desktop Cloud",
       "providerLabel": "Provider",
       "run": "Esegui test",
       "customEndpoint": "Endpoint personalizzato",
@@ -1642,10 +1642,10 @@
         "title": "Non siamo riusciti a elaborare il pagamento"
       },
       "planDescriptions": {
-        "freeUsage": "{{used}} / {{limit}} parole di OpenWhispr Cloud questa settimana",
+        "freeUsage": "{{used}} / {{limit}} Hina Desktop Cloud words this week",
         "byokUnlimited": "Le tue chiavi API e i modelli locali restano utilizzabili senza limiti.",
         "nextBilling": "Prossima fatturazione: {{date}}",
-        "pastDue": "{{used}} / {{limit}} parole di OpenWhispr Cloud questa settimana — aggiorna il pagamento per ripristinare Pro",
+        "pastDue": "{{used}} / {{limit}} Hina Desktop Cloud words this week - update payment to restore Pro",
         "trial": "{{days}} giorni rimanenti — trascrizioni illimitate",
         "unlimited": "Illimitato",
         "accessUntil": "Accesso fino al {{date}}",
@@ -1667,7 +1667,7 @@
       "title": "Account",
       "toasts": {
         "approachingLimit": {
-          "description": "Hai usato {{used}} di {{limit}} parole di OpenWhispr Cloud questa settimana. Passa a Pro per un uso illimitato.",
+          "description": "You've used {{used}} of {{limit}} Hina Desktop Cloud words this week. Upgrade to Pro for unlimited use.",
           "title": "Limite di parole cloud quasi raggiunto"
         }
       },
@@ -1684,7 +1684,7 @@
           "price": "$0",
           "period": "per sempre",
           "features": [
-            "## OpenWhispr Cloud",
+            "## Hina Desktop Cloud",
             "2.000 parole/settimana di trascrizione",
             "5 ore di registrazioni riunioni/mese",
             "## Sempre gratuito",
@@ -1783,7 +1783,7 @@
         "button": "Elimina il mio account",
         "deleting": "Eliminazione...",
         "title": "Eliminare il tuo account?",
-        "description": "Questo elimina permanentemente il tuo account OpenWhispr e i dati personali. I contenuti degli spazi di lavoro e i dati degli altri utenti locali restano su questo dispositivo.",
+        "description": "This permanently deletes your Hina Desktop account and personal data. Workspace-owned content and data belonging to other local users stay on this device.",
         "confirmText": "Elimina account",
         "eraseDeviceLabel": "Elimina anche tutti i dati da questo dispositivo",
         "eraseDeviceDescription": "Elimina note e cache degli spazi di tutti gli utenti locali, modelli scaricati, impostazioni, calendari, credenziali e registrazioni.",
@@ -1861,7 +1861,7 @@
       "enableTextCleanup": "Attiva correzione testo",
       "enableTextCleanupDescription": "L'IA rimuove parole superflue, corregge grammatica e punteggiatura",
       "modes": {
-        "openwhispr": "OpenWhispr Cloud",
+        "openwhispr": "Hina Desktop Cloud",
         "providers": "Porta la tua chiave",
         "local": "Locale",
         "selfHosted": "Self-hosted",
@@ -1872,13 +1872,13 @@
         "enterprise": "Enterprise",
         "enterpriseDesc": "Usa l'account cloud della tua organizzazione (AWS, Azure, GCP)."
       },
-      "openwhisprCloud": "OpenWhispr Cloud",
+      "openwhisprCloud": "Hina Desktop Cloud",
       "openwhisprCloudDescription": "Risultati affidabili. Nessuna configurazione necessaria.",
       "title": "Miglioramento testo con IA",
       "toasts": {
         "switchedCloud": {
-          "description": "Il miglioramento del testo userà il servizio cloud di OpenWhispr.",
-          "title": "Passato a OpenWhispr Cloud"
+          "description": "Text enhancement will use Hina Desktop's cloud service.",
+          "title": "Switched to Hina Desktop Cloud"
         },
         "switchedCustom": {
           "description": "Configura il tuo provider e la tua chiave API.",
@@ -1966,7 +1966,7 @@
       "appearance": {
         "auto": "Automatico",
         "dark": "Scuro",
-        "description": "Personalizza l'aspetto di OpenWhispr",
+        "description": "Control how Hina Desktop looks",
         "light": "Chiaro",
         "theme": "Tema",
         "themeDescription": "Scegli chiaro, scuro o in base al sistema",
@@ -1994,8 +1994,8 @@
         "linuxPttSetupDescription": "Il tuo utente ha bisogno di accesso ai dispositivi di input della tastiera.",
         "linuxPttSetupNote": "Dopo aver eseguito il comando, esci e riaccedi.",
         "hyprlandConfigWriteWarningTitle": "Le scorciatoie di Hyprland non verranno mantenute",
-        "hyprlandConfigWriteWarningDescription": "OpenWhispr non può scrivere in {{path}}, quindi le scorciatoie non sopravvivranno a un ricaricamento della configurazione di Hyprland. Assicurati che il file esista e sia scrivibile.",
-        "hyprlandUnbindDescription": "Su Hyprland, OpenWhispr riserva la scorciatoia selezionata. Qualsiasi associazione Hyprland esistente che usa la stessa combinazione di tasti verrà rimossa quando OpenWhispr registra la sua scorciatoia."
+        "hyprlandConfigWriteWarningDescription": "Hina Desktop cannot write to {{path}}, so keybinds will not survive a Hyprland config reload. Make sure the file exists and is writable.",
+        "hyprlandUnbindDescription": "On Hyprland, Hina Desktop claims the selected shortcut. Any existing Hyprland bind that uses the same key combination will be unbound when Hina Desktop registers its shortcut."
       },
       "meetingHotkey": {
         "title": "Scorciatoia modalità meeting",
@@ -2021,7 +2021,7 @@
       },
       "notifications": {
         "title": "Notifiche",
-        "description": "Scegli quali notifiche OpenWhispr può mostrare",
+        "description": "Control which notifications Hina Desktop can show",
         "disableAll": "Disattiva tutte le notifiche",
         "disableAllDescription": "Silenzia tutto tranne i messaggi di errore",
         "meetingDetection": "Rilevamento riunioni",
@@ -2038,14 +2038,14 @@
       },
       "startup": {
         "launchAtLogin": "Avvia all'accesso",
-        "launchAtLoginDescription": "Avvia OpenWhispr in background all'accesso",
+        "launchAtLoginDescription": "Start Hina Desktop in the background when you log in",
         "title": "Avvio",
-        "description": "Controlla il comportamento di OpenWhispr all'avvio",
+        "description": "Control how Hina Desktop behaves when it launches",
         "startMinimized": "Avvia ridotto a icona",
         "startMinimizedDescription": "Avvia senza mostrare la finestra del pannello di controllo",
         "needsApproval": {
           "title": "Approvazione necessaria in Impostazioni di Sistema",
-          "description": "macOS ha registrato OpenWhispr come elemento di login, ma attende che tu lo consenta in Elementi login.",
+          "description": "macOS registered Hina Desktop as a login item but is waiting for you to allow it under Login Items.",
           "action": "Apri Elementi login"
         }
       },
@@ -2097,7 +2097,7 @@
           "group": {
             "step1Title": "Aggiungi il tuo utente al gruppo input",
             "step2Title": "Esci e rientra",
-            "step2Desc": "Le modifiche ai gruppi hanno effetto solo dopo un nuovo accesso. Esci dal desktop, accedi di nuovo e riapri OpenWhispr."
+            "step2Desc": "Group changes only take effect after a new login session. Log out of your desktop and log back in, then reopen Hina Desktop."
           },
           "service": {
             "step1Title": "Crea la cartella del servizio",
@@ -2121,7 +2121,7 @@
           "manualTitle": "Aggiungi questo alla tua configurazione",
           "manualDesc": "Configuralo tu stesso, poi ricostruisci.",
           "flakeTitle": "Stai installando tramite il nostro flake?",
-          "flakeDesc": "Se installi OpenWhispr dal flake, programs.openwhispr.enable attiva ydotool, il modulo uinput e le appartenenze ai gruppi per te.",
+          "flakeDesc": "If you install Hina Desktop from the flake, programs.openwhispr.enable turns on ydotool, the uinput module and the group memberships for you.",
           "rebuildNote": "Esegui sudo nixos-rebuild switch, poi disconnettiti e riconnettiti affinché la modifica al gruppo e la regola /dev/uinput abbiano effetto. Sostituisci <you> con il tuo nome utente."
         },
         "wlCopyDesc": "Strumento degli appunti da cui le app Wayland leggono il testo incollato su questo desktop"
@@ -2157,7 +2157,7 @@
           },
           "installUpdate": {
             "confirmText": "Installa e riavvia",
-            "description": "OpenWhispr verrà riavviato per applicare l'aggiornamento.",
+            "description": "Hina Desktop will restart to apply the update.",
             "title": "Installa aggiornamento"
           },
           "noUpdates": {
@@ -2189,13 +2189,13 @@
     "permissions": {
       "accessibilityDescription": "Necessario per l'incollaggio automatico dopo la trascrizione",
       "accessibilityTitle": "Accessibilità",
-      "description": "Testa e gestisci i permessi di sistema necessari per il corretto funzionamento di OpenWhispr",
+      "description": "Test and manage system permissions required for Hina Desktop to function correctly",
       "microphoneDescription": "Cattura la tua voce per la dettatura e la trascrizione",
       "microphoneTitle": "Microfono",
       "resetAccessibility": {
-        "description": "Questa operazione rimuoverà OpenWhispr dai permessi di accessibilità. Dovrai concedere nuovamente l'accesso in Impostazioni di sistema > Privacy e sicurezza > Accessibilità.",
+        "description": "This will remove Hina Desktop from accessibility permissions. You'll need to re-grant access in System Settings > Privacy & Security > Accessibility.",
         "label": "Reimposta permessi di accessibilità",
-        "rowDescription": "Risolvi i problemi dopo la reinstallazione o ricompilazione dell'app rimuovendo e riaggiungendo OpenWhispr nelle Impostazioni di sistema",
+        "rowDescription": "Fix issues after reinstalling or rebuilding the app by removing and re-adding Hina Desktop in System Settings",
         "title": "Reimposta permessi di accessibilità"
       },
       "optional": "Facoltativo",
@@ -2224,7 +2224,7 @@
       "leaderboardRequiresAccount": "Accedi per gestire la partecipazione alle classifiche.",
       "leaderboardRequiresHistory": "Attiva la conservazione dei dati prima di partecipare alle classifiche.",
       "usageAnalytics": "Analisi dell'utilizzo",
-      "usageAnalyticsDescription": "Aiutaci a migliorare OpenWhispr condividendo metriche di prestazione anonime. Non inviamo mai il contenuto delle trascrizioni, solo dati su tempi ed errori.",
+      "usageAnalyticsDescription": "Help us improve Hina Desktop by sharing anonymous performance metrics. We never send transcription content — only timing and error data.",
       "dataRetention": "Conservazione dei dati",
       "dataRetentionDescription": "Salva trascrizioni e audio localmente nella cronologia. Se disattivato, le trascrizioni vengono incollate ma non salvate.",
       "transcriptRetention": "Conservazione delle trascrizioni",
@@ -2280,9 +2280,9 @@
     "transcription": {
       "customSetup": "Configurazione personalizzata",
       "customSetupDescription": "Usa il tuo provider e la tua chiave API.",
-      "description": "Scegli come OpenWhispr trascrive la tua voce",
+      "description": "Choose how Hina Desktop transcribes your voice",
       "modes": {
-        "openwhispr": "OpenWhispr Cloud",
+        "openwhispr": "Hina Desktop Cloud",
         "providers": "Provider cloud",
         "local": "Locale",
         "selfHosted": "Self-hosted",
@@ -2293,13 +2293,13 @@
         "enterprise": "Cloud aziendale",
         "enterpriseDesc": "L'audio viene inviato al cloud della tua organizzazione."
       },
-      "openwhisprCloud": "OpenWhispr Cloud",
+      "openwhisprCloud": "Hina Desktop Cloud",
       "openwhisprCloudDescription": "Risultati affidabili. Nessuna configurazione necessaria.",
       "title": "Riconoscimento vocale",
       "toasts": {
         "switchedCloud": {
-          "description": "La trascrizione userà il servizio cloud di OpenWhispr.",
-          "title": "Passato a OpenWhispr Cloud"
+          "description": "Transcription will use Hina Desktop's cloud service.",
+          "title": "Switched to Hina Desktop Cloud"
         },
         "switchedCustom": {
           "description": "Configura il tuo provider e la tua chiave API.",
@@ -2385,7 +2385,7 @@
         }
       },
       "meetingEnterpriseOnly": "La tua organizzazione consente solo la trascrizione su cloud aziendale, che non copre ancora la registrazione delle riunioni.",
-      "meetingCloudSignedOut": "Le registrazioni delle note non possono avviarsi con OpenWhispr Cloud finché non hai effettuato l'accesso. Scegli un altro motore qui sopra."
+      "meetingCloudSignedOut": "Note recordings can't start on Hina Desktop Cloud while you're signed out. Choose another engine above."
     },
     "intelligence": {
       "gpuDevice": {
@@ -2833,7 +2833,7 @@
     },
     "tryAgain": "Riprova",
     "card": {
-      "brand": "OpenWhispr",
+      "brand": "Hina Desktop",
       "signalId": "Signal ID",
       "audioSignature": "La tua firma audio",
       "stop": "Ferma",
@@ -2985,7 +2985,7 @@
     },
     "structureIntro": {
       "title": "Dove si trovano le tue note",
-      "description": "OpenWhispr separa i pensieri privati dal lavoro condiviso, così le note sono visibili alle persone giuste.",
+      "description": "Hina Desktop separates private thoughts from shared work so the right people see the right notes.",
       "personal": {
         "title": "Spazio personale",
         "description": "Solo tu puoi vedere le cartelle e le note in questo spazio."
@@ -3145,7 +3145,7 @@
       "newFolder": "Nuova cartella",
       "folderName": "Nome cartella",
       "create": "Crea",
-      "openwhisprCloud": "OpenWhispr Cloud",
+      "openwhisprCloud": "Hina Desktop Cloud",
       "custom": "Personalizzato",
       "selectFolder": "Seleziona cartella",
       "transcriptionFailed": "Trascrizione non riuscita",
@@ -3157,15 +3157,15 @@
       "fileTooLarge": "Questo file supera il limite di 500 MB.",
       "largeFileNote": "I file di grandi dimensioni vengono suddivisi e trascritti in parallelo.",
       "chunkProgress": "Trascrizione parte {{completed}} di {{total}}...",
-      "paidPlanRequired": "La trascrizione cloud per file superiori a 25 MB richiede un piano a pagamento. I file di grandi dimensioni vengono elaborati con OpenWhispr Cloud per risultati affidabili e di alta qualità.",
+      "paidPlanRequired": "Cloud transcription for files over 25 MB requires a paid plan. Large files are processed with Hina Desktop Cloud for reliable, high-quality results.",
       "byokTooLarge": "Le chiavi API di terze parti supportano solo file fino a {{size}} MB.",
-      "byokTooLargeDetail": "Per file superiori a {{size}} MB, OpenWhispr Cloud gestisce la suddivisione, l'elaborazione parallela e il riassemblaggio — per risultati affidabili senza dipendere dai limiti dei provider di terze parti.",
-      "byokTooLargeNeedsAccount": "Crea un account e passa a un piano a pagamento per trascrivere file più grandi con OpenWhispr Cloud.",
-      "byokTooLargeNeedsUpgrade": "Passa a un piano a pagamento per trascrivere file più grandi con OpenWhispr Cloud.",
-      "switchToCloudForLargeFiles": "Passa a OpenWhispr Cloud per trascrivere questo file.",
+      "byokTooLargeDetail": "For files over {{size}} MB, Hina Desktop Cloud handles splitting, parallel processing, and reassembly — so you get reliable results without depending on third-party provider limits.",
+      "byokTooLargeNeedsAccount": "Create an account and upgrade to a paid plan to transcribe larger files with Hina Desktop Cloud.",
+      "byokTooLargeNeedsUpgrade": "Upgrade to a paid plan to transcribe larger files with Hina Desktop Cloud.",
+      "switchToCloudForLargeFiles": "Switch to Hina Desktop Cloud to transcribe this file.",
       "createAccount": "Crea account",
       "upgrade": "Aggiorna",
-      "switchToCloud": "OpenWhispr Cloud",
+      "switchToCloud": "Hina Desktop Cloud",
       "orDivider": "oppure",
       "urlPlaceholder": "Incolla un URL di YouTube o audio",
       "urlDownloading": "Download dell'audio in corso...",
@@ -3224,7 +3224,7 @@
       },
       "systemAudioStopped": {
         "title": "Audio della riunione fermo",
-        "description": "OpenWhispr non sta più captando gli altri partecipanti. Interrompi la registrazione e riavviala, oppure controlla il dispositivo di uscita audio."
+        "description": "Hina Desktop is no longer capturing the other participants. Stop and start the recording again, or check your sound output device."
       },
       "systemAudioQuiet": {
         "title": "L'audio della riunione è diventato silenzioso",
@@ -3514,7 +3514,7 @@
     "clearAll": "Cancella tutto",
     "clearTitle": "Svuotare il dizionario?",
     "clearDescription": "Verranno rimossi tutti i termini dal tuo dizionario personalizzato. Questa azione non può essere annullata.",
-    "addPlaceholder": "Aggiungi parole separate da virgole: OpenWhispr, Supabase, John Snow, ARR",
+    "addPlaceholder": "Add words separated by commas — Hina Desktop, Supabase, John Snow, ARR",
     "add": "Aggiungi",
     "importWords": "Importa parole",
     "importPlaceholder": "Incolla parole separate da virgole o a capo...",
@@ -3544,7 +3544,7 @@
       "duplicate": "Esiste già uno snippet con questo trigger",
       "emptyTitle": "Quello che non dovresti dover dire",
       "emptyTitleAccent": "due volte",
-      "emptyDescription": "Pronuncia un trigger e OpenWhispr lo sostituisce con ciò che hai salvato: URL, presentazioni, firme, prompt.",
+      "emptyDescription": "Speak a trigger word and Hina Desktop replaces it with whatever you saved — URLs, intros, sign-offs, prompts.",
       "new": "Nuovo snippet",
       "examples": {
         "linkedinTrigger": "Il mio LinkedIn",
@@ -3636,7 +3636,7 @@
       "emptyStrip_one": "{{count}} collega non partecipa ancora alla classifica. La classifica inizierà quando lo farà.",
       "emptyStrip_other": "{{count}} colleghi non partecipano ancora alla classifica. La classifica inizierà quando lo faranno.",
       "copyNudge": "Copia promemoria",
-      "nudgeText": "Partecipa alla classifica in OpenWhispr → Insights per visualizzare la classifica del team.",
+      "nudgeText": "Join the leaderboard in Hina Desktop → Insights so we can see the team board.",
       "nudgeCopied": "Promemoria copiato",
       "nudgeCopyError": "Impossibile copiare il promemoria",
       "joinTitle": "Scopri la tua posizione in {{scope}}",
@@ -3672,7 +3672,7 @@
         "desktop_words": "Parole da desktop",
         "mobile_words": "Parole da dispositivo mobile"
       },
-      "shareText": "Guarda la mia posizione su OpenWhispr.",
+      "shareText": "See where I rank on Hina Desktop.",
       "shareTitle": "Condividi classifica",
       "shareDescription": "Copia o scarica questa scheda, oppure copiala prima di aprire l’editor di un social network.",
       "copyImage": "Copia immagine",
@@ -3747,7 +3747,7 @@
     "submitBug": "Segnala un bug"
   },
   "postMigration": {
-    "title": "Bentornato su OpenWhispr",
+    "title": "Welcome back to Hina Desktop",
     "description": "Le tue note e le tue impostazioni sono state mantenute dalla versione precedente. macOS però la considera come una nuova app, quindi dovrai concedere di nuovo alcune autorizzazioni.",
     "done": "Fatto",
     "remindLater": "Ricordamelo più tardi"
@@ -3770,11 +3770,11 @@
     "ready": "Accelerazione GPU pronta",
     "activating": "Attivazione GPU...",
     "activationFailed": "Accelerazione GPU non disponibile",
-    "activationFailedDescription": "OpenWhispr sta usando la trascrizione CPU.",
-    "reasoningActivationFailedDescription": "OpenWhispr sta usando l'elaborazione CPU.",
+    "activationFailedDescription": "Hina Desktop switched to CPU transcription.",
+    "reasoningActivationFailedDescription": "Hina Desktop switched to CPU processing.",
     "retryActivation": "Riprova l'accelerazione GPU",
     "redownloadNeeded": "Il pacchetto GPU deve essere scaricato di nuovo",
-    "redownloadNeededDescription": "Questa versione di OpenWhispr non può usare il pacchetto GPU installato. Scaricalo di nuovo per riattivare l'accelerazione GPU.",
+    "redownloadNeededDescription": "This version of Hina Desktop can't use your installed GPU pack. Download it again to turn GPU acceleration back on.",
     "redownloadButton": "Scarica di nuovo il pacchetto GPU",
     "downloadFailed": "Impossibile scaricare il pacchetto GPU.",
     "remove": "Rimuovi",
@@ -3795,11 +3795,11 @@
       "undo": "Annulla",
       "accessibilityMissing": {
         "title": "Autorizzazioni di accessibilità richieste",
-        "description": "OpenWhispr necessita delle autorizzazioni di accessibilità per rilevare il tasto di scelta rapida e incollare il testo. Abilitale nel Pannello di controllo."
+        "description": "Hina Desktop needs accessibility permissions to detect your hotkey and paste text. Please enable them in the Control Panel."
       },
       "gpuFallback": {
         "title": "Accelerazione GPU non disponibile",
-        "description": "OpenWhispr sta usando la trascrizione CPU.",
+        "description": "Hina Desktop switched to CPU transcription.",
         "retry": "Riprova GPU"
       },
       "gpuPackMigration": {
@@ -3844,7 +3844,7 @@
       "visionModelDescription": "Instrada i comandi che includono uno screenshot verso un altro modello con capacità di visione.",
       "permissionTitle": "Registrazione schermo",
       "permissionDescription": "macOS richiede l'autorizzazione alla registrazione dello schermo per catturare lo schermo.",
-      "relaunchHint": "La registrazione dello schermo è stata concessa mentre OpenWhispr era in esecuzione. Chiudi e riapri OpenWhispr per iniziare a catturare gli screenshot."
+      "relaunchHint": "Screen Recording was granted while Hina Desktop was running. Quit and reopen Hina Desktop to start capturing screenshots."
     },
     "prompt": {
       "title": "Prompt dell'assistente",
@@ -3919,12 +3919,12 @@
       "openNote": "Apri nota",
       "unknownTool": "Strumento sconosciuto: {{name}}",
       "invalidArgs": "Argomenti dello strumento non validi per {{name}}",
-      "search_openwhispr_helpName": "Cerca nella guida di OpenWhispr",
-      "read_openwhispr_helpName": "Leggi la guida di OpenWhispr",
-      "get_openwhispr_contextName": "Leggi le impostazioni di OpenWhispr",
-      "search_openwhispr_helpStatus": "Ricerca nella guida di OpenWhispr...",
-      "read_openwhispr_helpStatus": "Lettura della guida di OpenWhispr...",
-      "get_openwhispr_contextStatus": "Lettura delle impostazioni di OpenWhispr..."
+      "search_openwhispr_helpName": "Search Hina Desktop help",
+      "read_openwhispr_helpName": "Read Hina Desktop help",
+      "get_openwhispr_contextName": "Read Hina Desktop settings",
+      "search_openwhispr_helpStatus": "Searching Hina Desktop help...",
+      "read_openwhispr_helpStatus": "Reading Hina Desktop help...",
+      "get_openwhispr_contextStatus": "Reading Hina Desktop settings..."
     }
   },
   "assistant": {
@@ -3964,7 +3964,7 @@
       "disconnectConfirm": "Disconnettere {{email}}?",
       "disconnectDescription": "Le note delle riunioni non saranno più registrate da questo calendario.",
       "systemAudioRequired": "Autorizzazione Audio di Sistema richiesta",
-      "systemAudioDescription": "Per trascrivere le riunioni, OpenWhispr necessita dell'autorizzazione Audio di Sistema per catturare l'audio degli altri partecipanti. Non registriamo mai il tuo schermo. Verrai reindirizzato alle Impostazioni di Sistema per attivarla.",
+      "systemAudioDescription": "To transcribe meetings, Hina Desktop needs the System Audio permission to capture other participants' audio. We never record your screen. You'll be taken to System Settings to enable it.",
       "openSettings": "Apri Impostazioni di Sistema",
       "connectFailed": "Connessione non riuscita",
       "connectFailedDescription": "Si è verificato un errore durante la connessione a Google Calendar. Riprova."
@@ -3992,10 +3992,10 @@
       "disconnectConfirm": "Disconnettere il Calendario Apple?",
       "disconnectDescription": "Le note delle riunioni non saranno più registrate dal tuo Calendario Apple.",
       "permissionDenied": "Accesso al calendario richiesto",
-      "permissionDeniedDescription": "OpenWhispr ha bisogno dell'accesso al calendario per rilevare le riunioni. Attiva OpenWhispr in Impostazioni di Sistema, in Privacy e sicurezza → Calendari.",
+      "permissionDeniedDescription": "Hina Desktop needs calendar access to detect meetings. Enable Hina Desktop in System Settings under Privacy & Security → Calendars.",
       "openSettings": "Apri Impostazioni di Sistema",
       "connectFailed": "Connessione non riuscita",
-      "connectFailedDescription": "Si è verificato un errore durante la connessione a Calendar.app. Riavvia OpenWhispr e riprova."
+      "connectFailedDescription": "Something went wrong while connecting to Calendar.app. Please restart Hina Desktop and try again."
     },
     "api": {
       "description": "Gestisci le chiavi API per l'accesso programmatico",
@@ -4005,13 +4005,13 @@
     },
     "mcp": {
       "description": "Chatta, cerca e lavora con le tue note in Claude, ChatGPT e Cursor.",
-      "step1": "Nel tuo strumento di IA, aggiungi OpenWhispr MCP usando l'URL pubblico",
-      "proRequired": "Passa a un piano a pagamento per collegare OpenWhispr a Claude, ChatGPT e Cursor.",
+      "step1": "In your AI tool, add Hina Desktop MCP using the public URL",
+      "proRequired": "Upgrade to a paid plan to connect Hina Desktop to Claude, ChatGPT, and Cursor.",
       "worksWith": "Funziona con",
       "copyUrl": "Copia URL MCP",
       "copied": "Copiato",
       "oauthTitle": "Accedi con OAuth",
-      "oauthDescription": "In un client che supporta OAuth, aggiungi l’URL del server, accedi a OpenWhispr e autorizza l’accesso. Non serve una chiave API.",
+      "oauthDescription": "In a client that supports OAuth, add the server URL, then sign in to Hina Desktop and approve access. No API key needed.",
       "apiKeyTitle": "Usa una chiave API",
       "apiKeyDescription": "Per i client che accettano intestazioni di richiesta, crea una chiave API personale con le autorizzazioni necessarie e usa l’intestazione seguente."
     },
@@ -4022,7 +4022,7 @@
       "local": {
         "label": "Locale",
         "freeBadge": "Gratis",
-        "description": "Leggi le tue note locali direttamente. Nessun login o chiave API — funziona mentre OpenWhispr è aperto."
+        "description": "Read your local notes directly. No login or API key — works while Hina Desktop is running."
       },
       "cloud": {
         "label": "Cloud",
@@ -4042,7 +4042,7 @@
       "upgrade": "Aggiorna"
     },
     "notABot": {
-      "description": "OpenWhispr cattura l'audio direttamente dal tuo sistema — non entra mai nelle tue riunioni come partecipante. Basta collegare il calendario e prendere appunti normalmente."
+      "description": "Hina Desktop captures audio directly from your system — it never joins your meetings as a participant. Just connect your calendar and take notes as normal."
     },
     "nav": {
       "label": "Sezioni integrazioni",
@@ -4097,7 +4097,7 @@
         "reconnect_needed": "Slack deve essere ricollegato nelle Impostazioni.",
         "connection_changed": "La connessione Slack è cambiata prima dell'invio, quindi non è stato inviato nulla.",
         "rate_limited": "Slack è occupato. Riprova a breve.",
-        "missing_scope": "OpenWhispr non ha il permesso di pubblicare lì. Ricollega Slack nelle Impostazioni.",
+        "missing_scope": "Hina Desktop doesn't have permission to post there. Reconnect Slack in Settings.",
         "msg_too_long": "Il messaggio è troppo lungo per Slack (massimo 12.000 caratteri, una volta formattato).",
         "no_text": "Il messaggio è vuoto.",
         "network": "Impossibile raggiungere Slack. Non è stato inviato nulla.",
@@ -4112,9 +4112,9 @@
           "connection_changed": "La connessione GitHub è cambiata prima della pubblicazione, quindi non è stato pubblicato nulla.",
           "credential_save_failed": "Impossibile salvare l'accesso a GitHub su questo computer. Non è stato pubblicato nulla. Riprova.",
           "generic": "Qualcosa è andato storto. Non è stato pubblicato nulla su GitHub.",
-          "not_installed": "L'app GitHub di OpenWhispr non è installata in questo repository. Aggiungila nelle Impostazioni. Non è stato pubblicato nulla.",
-          "repo_unlisted": "Impossibile confermare che l'app GitHub di OpenWhispr sia installata in questo repository. Controlla il nome del repository. Non è stato pubblicato nulla.",
-          "no_repositories": "Non hai ancora scelto repository per l'app GitHub di OpenWhispr. Sceglili nelle Impostazioni. Non è stato pubblicato nulla.",
+          "not_installed": "The Hina Desktop GitHub App isn't installed on this repository. Add it in Settings. Nothing was posted.",
+          "repo_unlisted": "Couldn't confirm the Hina Desktop GitHub App is installed on this repository. Check the repository name. Nothing was posted.",
+          "no_repositories": "No repositories are chosen for the Hina Desktop GitHub App yet. Choose them in Settings. Nothing was posted.",
           "forbidden": "Non hai il permesso di farlo in questo repository. Non è stato pubblicato nulla.",
           "not_found": "Impossibile trovare la issue o la pull request. Non è stato pubblicato nulla.",
           "issues_disabled": "Le issue sono disattivate in questo repository. Non è stato pubblicato nulla.",
@@ -4159,7 +4159,7 @@
           "wrong_workspace": "Quella issue è in un altro workspace di Linear. Non è stato inviato nulla.",
           "invalid_reference": "Non è una issue di Linear. Non è stato inviato nulla.",
           "refused": "Linear ha rifiutato la richiesta. Non è stato inviato nulla.",
-          "unknown_action": "OpenWhispr non può farlo in Linear. Non è stato inviato nulla.",
+          "unknown_action": "Hina Desktop can't do that in Linear. Nothing was sent.",
           "generic": "Qualcosa è andato storto. Non è stato inviato nulla a Linear."
         }
       },
@@ -4257,19 +4257,19 @@
         "oauth_denied": "Slack non è stato connesso perché l'accesso non è stato consentito.",
         "oauth_timeout": "La connessione ha impiegato troppo tempo. Riprova.",
         "oauth_state_mismatch": "Quel link di accesso non era più valido. Riprova.",
-        "ports_busy": "Un'altra app sta usando le porte di cui OpenWhispr ha bisogno per connettersi. Chiudila e riprova.",
+        "ports_busy": "Another app is using the ports Hina Desktop needs to connect. Close it and try again.",
         "token_exchange_failed": "Slack non ha completato la connessione. Riprova.",
         "not_configured": "Slack non è disponibile in questa versione.",
         "connection_changed": "Il tuo account o la connessione Slack sono cambiati durante la connessione. Riprova.",
-        "signed_out": "Accedi a OpenWhispr per connettere Slack.",
+        "signed_out": "Sign in to Hina Desktop to connect Slack.",
         "policy_blocked": "La tua organizzazione ha disattivato i connettori.",
         "policy_unavailable": "Non è stato possibile verificare le impostazioni della tua organizzazione. Riprova."
       },
       "browser": {
         "connectedTitle": "Slack è connesso",
-        "connectedBody": "Puoi chiudere questa scheda e tornare a OpenWhispr.",
+        "connectedBody": "You can close this tab and return to Hina Desktop.",
         "failedTitle": "Slack non è stato connesso",
-        "failedBody": "Torna a OpenWhispr per riprovare."
+        "failedBody": "Return to Hina Desktop to try again."
       }
     },
     "github": {
@@ -4284,7 +4284,7 @@
       "connectedAs_unknown": "Connesso come {{account}}",
       "needsReconnect": "GitHub deve essere ricollegato.",
       "reviewOnGithub": "Controlla su GitHub",
-      "disconnectedHint": "Disconnesso da questo computer. GitHub mantiene l'autorizzazione di OpenWhispr finché non la rimuovi da lì.",
+      "disconnectedHint": "Disconnected from this computer. GitHub keeps Hina Desktop's authorization until you remove it there.",
       "errors": {
         "connect_failed": "Impossibile connettere GitHub. Riprova.",
         "disconnect_failed": "Impossibile disconnettere GitHub. Riprova.",
@@ -4292,7 +4292,7 @@
         "token_exchange_failed": "GitHub non ha completato la connessione. Riprova.",
         "not_configured": "GitHub non è disponibile in questa versione.",
         "connection_changed": "Il tuo account o la connessione GitHub sono cambiati durante la connessione. Riprova.",
-        "signed_out": "Accedi a OpenWhispr per connettere GitHub.",
+        "signed_out": "Sign in to Hina Desktop to connect GitHub.",
         "policy_blocked": "La tua organizzazione ha disattivato i connettori.",
         "policy_unavailable": "Non è stato possibile verificare le impostazioni della tua organizzazione. Riprova.",
         "code_expired": "Il codice è scaduto. Riprova.",
@@ -4318,32 +4318,32 @@
       "connect": "Connetti",
       "reconnect": "Riconnetti",
       "disconnect": "Disconnetti",
-      "connecting": "Completa la connessione nel tuo browser… Se Google indica che l'accesso è bloccato, l'amministratore Google della tua organizzazione deve consentire OpenWhispr.",
+      "connecting": "Finish connecting in your browser… If Google says access is blocked, your organization's Google admin needs to allow Hina Desktop.",
       "connectedAs": "Connesso come {{account}}",
       "needsReconnect": "Gmail deve essere ricollegato.",
-      "grantKept": "Disconnesso. Google Calendar usa la stessa autorizzazione Google, quindi OpenWhispr resta elencato nel tuo account Google finché non disconnetti anche Google Calendar.",
+      "grantKept": "Disconnected. Google Calendar uses the same Google permission, so Hina Desktop stays listed in your Google Account until you disconnect Google Calendar too.",
       "errors": {
         "connect_failed": "Impossibile connettere Gmail. Riprova.",
         "disconnect_failed": "Impossibile disconnettere Gmail. Riprova.",
         "oauth_denied": "Gmail non è stato connesso perché l'accesso non è stato consentito.",
-        "oauth_timeout": "La connessione ha impiegato troppo tempo. Se Google ha indicato che l'accesso è bloccato, chiedi all'amministratore Google della tua organizzazione di consentire OpenWhispr. Altrimenti, riprova.",
+        "oauth_timeout": "Connecting took too long. If Google said access is blocked, ask your organization's Google admin to allow Hina Desktop. Otherwise, try again.",
         "oauth_state_mismatch": "Quel link di accesso non era più valido. Riprova.",
-        "ports_busy": "Un'altra app sta usando le porte di cui OpenWhispr ha bisogno per connettersi. Chiudila e riprova.",
+        "ports_busy": "Another app is using the ports Hina Desktop needs to connect. Close it and try again.",
         "token_exchange_failed": "Google non ha completato la connessione. Riprova.",
         "not_configured": "Gmail non è disponibile in questa versione.",
         "connection_changed": "Il tuo account o la connessione Gmail sono cambiati durante la connessione. Riprova.",
-        "signed_out": "Accedi a OpenWhispr per connettere Gmail.",
+        "signed_out": "Sign in to Hina Desktop to connect Gmail.",
         "policy_blocked": "La tua organizzazione ha disattivato i connettori.",
         "policy_unavailable": "Non è stato possibile verificare le impostazioni della tua organizzazione. Riprova.",
         "permission_not_granted": "Gmail non è stato connesso perché non è stato concesso il permesso di inviare email. Connetti di nuovo e lascia selezionato quel permesso.",
         "email_not_verified": "Google non ha verificato l'indirizzo email di questo account, quindi Gmail non è stato connesso.",
-        "domain_policy": "L'amministratore Google della tua organizzazione ha bloccato questa app. Chiedigli di consentire OpenWhispr."
+        "domain_policy": "Your organization's Google admin blocked this app. Ask them to allow Hina Desktop."
       },
       "browser": {
         "connectedTitle": "Gmail è connesso",
-        "connectedBody": "Puoi chiudere questa scheda e tornare a OpenWhispr.",
+        "connectedBody": "You can close this tab and return to Hina Desktop.",
         "failedTitle": "Gmail non è stato connesso",
-        "failedBody": "Torna a OpenWhispr per riprovare."
+        "failedBody": "Return to Hina Desktop to try again."
       }
     },
     "linear": {
@@ -4361,20 +4361,20 @@
         "oauth_denied": "Linear non è stato connesso perché l'accesso non è stato consentito.",
         "oauth_timeout": "La connessione ha impiegato troppo tempo. Riprova.",
         "oauth_state_mismatch": "Quel link di accesso non era più valido. Riprova.",
-        "ports_busy": "Un'altra app sta usando le porte di cui OpenWhispr ha bisogno per connettersi. Chiudila e riprova.",
+        "ports_busy": "Another app is using the ports Hina Desktop needs to connect. Close it and try again.",
         "token_exchange_failed": "Linear non ha completato la connessione. Riprova.",
         "not_configured": "Linear non è disponibile in questa versione.",
         "connection_changed": "Il tuo account o la connessione Linear sono cambiati durante la connessione. Riprova.",
-        "signed_out": "Accedi a OpenWhispr per connettere Linear.",
+        "signed_out": "Sign in to Hina Desktop to connect Linear.",
         "policy_blocked": "La tua organizzazione ha disattivato i connettori.",
         "policy_unavailable": "Non è stato possibile verificare le impostazioni della tua organizzazione. Riprova.",
         "permission_not_granted": "Linear non è stato connesso perché non sono stati concessi tutti i permessi. Connetti di nuovo e consentili tutti."
       },
       "browser": {
         "connectedTitle": "Linear è connesso",
-        "connectedBody": "Puoi chiudere questa scheda e tornare a OpenWhispr.",
+        "connectedBody": "You can close this tab and return to Hina Desktop.",
         "failedTitle": "Linear non è stato connesso",
-        "failedBody": "Torna a OpenWhispr per riprovare."
+        "failedBody": "Return to Hina Desktop to try again."
       },
       "notes": {
         "priority": {
@@ -4454,8 +4454,8 @@
           "connection_changed": "La connessione GitHub è cambiata.",
           "credential_save_failed": "Impossibile salvare l'accesso a GitHub su questo computer.",
           "generic": "Non ha funzionato su GitHub.",
-          "not_installed": "L'app GitHub di OpenWhispr non è installata lì.",
-          "repo_unlisted": "Impossibile confermare che l'app GitHub di OpenWhispr sia installata lì.",
+          "not_installed": "The Hina Desktop GitHub App isn't installed there.",
+          "repo_unlisted": "Couldn't confirm the Hina Desktop GitHub App is installed there.",
           "no_repositories": "Nessun repository GitHub ancora scelto.",
           "forbidden": "Nessun permesso in quel repository.",
           "not_found": "Impossibile trovare quella issue o pull request.",
@@ -4555,7 +4555,7 @@
     "systemAudioRequired": "L'autorizzazione Audio di Sistema è necessaria per catturare l'audio degli altri partecipanti.",
     "openSettings": "Apri Impostazioni di Sistema",
     "connectCalendar": "Collega il tuo calendario",
-    "connectCalendarDescription": "Vedi le tue riunioni e partecipa senza uscire da OpenWhispr.",
+    "connectCalendarDescription": "See your meetings and join them without leaving Hina Desktop.",
     "connectCalendarButton": "Collega calendario"
   },
   "notesView": {
@@ -4610,7 +4610,7 @@
         "invitationActions": "Azioni invito",
         "resendSent": "Invito inviato",
         "resendThrottled": "Invito inviato di recente. Riprova tra un minuto.",
-        "syncPrompt": "La condivisione mantiene una copia di questa nota nel tuo cloud OpenWhispr. Solo tu puoi vederla finché non scegli con chi condividerla.",
+        "syncPrompt": "Sharing keeps a copy of this note in your Hina Desktop cloud. Only you can see it until you choose who to share it with.",
         "syncAndShare": "Sincronizza nota",
         "visibility": {
           "label": "Visibilità",
@@ -4672,12 +4672,12 @@
   },
   "permissionsGate": {
     "title": "Autorizzazioni necessarie",
-    "description": "OpenWhispr ha bisogno di alcune autorizzazioni per funzionare su questo computer.",
+    "description": "Hina Desktop needs a few permissions to work on this computer.",
     "continue": "Continua"
   },
   "apiKeysSection": {
     "title": "Chiavi API",
-    "description": "Crea chiavi per accedere all'API di OpenWhispr in modo programmatico.",
+    "description": "Create keys to access the Hina Desktop API programmatically.",
     "empty": "Nessuna chiave API ancora",
     "createButton": "Crea chiave API",
     "create": {
@@ -4795,7 +4795,7 @@
     },
     "join": {
       "title": "Unisciti al tuo team",
-      "domainTitle": "Il tuo team è già su OpenWhispr",
+      "domainTitle": "Your team is on Hina Desktop",
       "description": "In questi workspace c'è qualcuno del dominio della tua email.",
       "invitedDescription": "Sei stato invitato a un workspace.",
       "invitedBy": "Invitato da {{inviter}} come {{role}}",
@@ -4995,20 +4995,20 @@
       }
     },
     "setup": {
-      "introTitle": "Fai scrivere OpenWhispr\ncome parli tu",
+      "introTitle": "Make Hina Desktop\ntype the way you talk",
       "introDescription": "Imposta tono e stile per app diverse.",
       "personalize": "Personalizza",
-      "cleanupOffTitle": "Insegna a OpenWhispr\nil tuo stile",
+      "cleanupOffTitle": "Teach Hina Desktop\nyour voice",
       "cleanupOffDescription": "Attiva la correzione testo, poi imposta tono e stile per app diverse.",
       "stepDescription": "Scegli l'esempio che ti somiglia di più.",
       "progress": "Passo {{current}} di {{total}}",
       "finish": "Fine"
     },
     "banner": {
-      "title": "Insegna a OpenWhispr come scrivi",
+      "title": "Teach Hina Desktop how you write",
       "description": "Imposta il tuo tono preferito per lavoro, amici e tutto ciò che sta in mezzo.",
       "start": "Inizia ora",
-      "cleanupOffTitle": "Insegna a OpenWhispr il tuo stile",
+      "cleanupOffTitle": "Teach Hina Desktop your voice",
       "cleanupOffDescription": "Attiva la correzione testo e scegli un tono per messaggi, email e altro.",
       "notNow": "Non ora",
       "decoration": "Le tue parole dovrebbero somigliarti. Qualunque cosa tu scriva, per chiunque sia."
@@ -5071,5 +5071,50 @@
     "permissionDenied": "Negata",
     "permissionRestricted": "Limitata",
     "permissionNotDetermined": "Non richiesta"
+  },
+  "hinaSettings": {
+    "title": "Hina Desktop",
+    "trayApp": "Local dictation & Hina",
+    "description": "Runs in your system tray. Dictate into any app or speak to your existing Hina agent.",
+    "shortcuts": "Keyboard shortcuts",
+    "shortcutsDescription": "Click a shortcut and press the keys you want to use.",
+    "dictation": "Dictate into the focused app",
+    "assistant": "Talk to Hina",
+    "activation": "Recording mode",
+    "tap": "Press to start / press to stop",
+    "push": "Hold to record",
+    "microphone": "Microphone",
+    "localModels": "Local speech recognition",
+    "language": "Recognition language",
+    "localModelsDescription": "Audio is transcribed on this computer. Download a model once, then use it offline.",
+    "gpuActive": "{{backend}} acceleration is active",
+    "gpuFallback": "GPU failed; using the CPU. You can retry below.",
+    "gpuReady": "CUDA is installed. It will be used when the local model starts.",
+    "cpuReady": "CPU recognition is available.",
+    "downloading": "Downloading CUDA: {{progress}}%",
+    "installCuda": "Install / update CUDA support",
+    "retryGpu": "Retry GPU",
+    "refresh": "Refresh status",
+    "preferences": "Preferences",
+    "autoStart": "Start in the tray at sign-in",
+    "theme": "Appearance",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark",
+    "closeHint": "Closing this window keeps dictation running in the tray. Use the tray menu to quit.",
+    "actionFailed": "The action could not be completed.",
+    "connectorTitle": "Hina Connector",
+    "connectorDescription": "Send voice commands to your existing Hina / OpenClaw agent. Speech recognition stays on this computer.",
+    "connectorLocation": "Connector location",
+    "localMachine": "Local machine",
+    "wsl": "WSL default distribution (Windows)",
+    "connectorUrl": "Local Connector URL",
+    "token": "Connector access token",
+    "tokenSaved": "Connector access token (leave empty to keep the saved token)",
+    "connect": "Test and connect Hina",
+    "connectorChecking": "Checking Hina Connector...",
+    "connectorConnected": "Connected. Voice commands now use your existing Hina agent.",
+    "connectorEnabled": "Hina integration enabled",
+    "connectorUnconfigured": "Connect Hina to enable voice commands."
   }
 }

@@ -33,14 +33,14 @@ test("every bearer token change reaches the handler that clears the scope", () =
   assert.ok(source.includes("tokenStore.subscribe((state) => this._handleAuthTokenChange(state))"));
 });
 
-test("boot restores the validated scope before any main-process consumer constructs", () => {
+test("local boot never restores an upstream account into local history", () => {
   const source = read("main.js");
   const bootWindow = source.match(
     /databaseManager = new DatabaseManager\(\);([\s\S]*?)new IPCHandlers\(/
   );
   assert.ok(bootWindow, "DatabaseManager constructs before IPCHandlers");
-  assert.ok(bootWindow[1].includes("resolveBootAccountScope"));
-  assert.ok(bootWindow[1].includes("databaseManager.setActiveAccountId(bootAccountId)"));
+  assert.equal(bootWindow[1].includes("resolveBootAccountScope"), false);
+  assert.equal(bootWindow[1].includes("databaseManager.setActiveAccountId(bootAccountId)"), false);
 });
 
 test("account-scoped accessibility readiness is revalidated before opening the sticky gate", () => {

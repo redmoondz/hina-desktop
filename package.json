@@ -1,7 +1,7 @@
 {
   "name": "hina-desktop",
-  "version": "0.1.0",
-  "description": "Hina Desktop: OpenWhispr with integrated OpenClaw Hina Voice Assistant",
+  "version": "0.2.0",
+  "description": "Local voice dictation and integration with an existing Hina/OpenClaw agent",
   "main": "main.js",
   "private": true,
   "engines": {
@@ -92,8 +92,7 @@
     "desktop-app"
   ],
   "author": {
-    "name": "OpenWhispr Team",
-    "email": "support@openwhispr.com"
+    "name": "Hina Desktop contributors"
   },
   "license": "MIT",
   "devDependencies": {

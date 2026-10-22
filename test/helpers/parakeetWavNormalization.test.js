@@ -61,6 +61,12 @@ function createPcm16Wav(sampleValue, sampleCount = 160) {
 
 test("transcribes audible mono 16 kHz WAV input", async (t) => {
   const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-parakeet-wav-test-"));
+  const originalCacheRoot = process.env.HINA_CACHE_ROOT;
+  process.env.HINA_CACHE_ROOT = path.join(tempHome, ".cache", "hina");
+  t.after(() => {
+    if (originalCacheRoot === undefined) delete process.env.HINA_CACHE_ROOT;
+    else process.env.HINA_CACHE_ROOT = originalCacheRoot;
+  });
   const originalLoad = Module._load;
   let ffmpegUtils;
   let conversions = 0;
@@ -95,7 +101,7 @@ test("transcribes audible mono 16 kHz WAV input", async (t) => {
   }
 
   try {
-    const modelDir = path.join(tempHome, ".cache", "openwhispr", "parakeet-models", MODEL_NAME);
+    const modelDir = path.join(tempHome, ".cache", "hina", "parakeet-models", MODEL_NAME);
     fs.mkdirSync(modelDir, { recursive: true });
     for (const file of getRequiredModelFiles(MODEL_NAME)) {
       fs.writeFileSync(path.join(modelDir, file), "");

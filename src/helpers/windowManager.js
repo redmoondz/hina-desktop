@@ -1539,7 +1539,6 @@ class WindowManager {
       this._clearControlPanelVisibilityTimer();
       this.endOnboardingDemo();
       this.controlPanelWindow = null;
-      this._onboardingActive = true;
       this._hideNormalAppSurfaces();
       this._onboardingRestoreBounds = null;
       this._onboardingWindowMode = null;
@@ -1550,10 +1549,8 @@ class WindowManager {
     MenuManager.setupControlPanelMenu(this.controlPanelWindow, () => this.openSettings());
 
     this.controlPanelWindow.webContents.on("did-finish-load", () => {
-      // Every fresh document starts unresolved. AppRouter releases the gate
-      // only after it commits the normal app, so OAuth/onboarding reloads cannot
-      // expose the dictation pill, hotkeys, or popup surfaces in between.
-      this.setOnboardingActive(true);
+      // Settings has no account or onboarding flow. The recorder renderer owns
+      // dictation readiness, so reloading settings cannot disable its hotkeys.
       this.endOnboardingDemo();
       this.controlPanelWindow.setTitle(i18nMain.t("window.controlPanelTitle"));
     });

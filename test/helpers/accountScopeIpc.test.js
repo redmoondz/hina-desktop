@@ -8,10 +8,8 @@ const Module = require("node:module");
 const handlersModulePath = require.resolve("../../src/helpers/ipcHandlers");
 const originalLoad = Module._load;
 
-// Registers the real handler closures against a fake `this` (the scaffolding
-// from agentDictationPillIpc.test.js) with the bearer state under test control
-// and the binding file in a temporary userData directory, so the scope
-// handlers run against the real accountScopeBinding.
+// Register the real IPC gateway against inert managers. Legacy credentials
+// must remain inaccessible and may never move local history into an account.
 const handlers = new Map();
 const broadcasts = [];
 const userDataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "account-scope-ipc-"));
@@ -117,7 +115,6 @@ function buildFakeThis() {
 }
 
 let fakeThis;
-let handleAuthTokenChange;
 
 test.before(() => {
   delete require.cache[handlersModulePath];
@@ -125,7 +122,6 @@ test.before(() => {
   const Ctor = IPCHandlers.default || IPCHandlers;
   fakeThis = buildFakeThis();
   Ctor.prototype.setupHandlers.call(fakeThis);
-  handleAuthTokenChange = (state) => Ctor.prototype._handleAuthTokenChange.call(fakeThis, state);
 });
 
 test.after(() => {
@@ -143,109 +139,49 @@ test("no scope is readable before a session has been validated", async () => {
   assert.equal(await getScope(), null);
 });
 
-test("a validated scope is readable back and broadcast to every window", async () => {
-  tokenState = { token: "token-a", generation: 1 };
+test("local account scope changes cannot move history or broadcast an identity", async () => {
+  tokenState = { token: "legacy-token", generation: 3 };
   broadcasts.length = 0;
-  assert.deepEqual(await setScope("account-a", 1), { success: true });
-  assert.deepEqual(await getScope(), { accountId: "account-a", authGeneration: 1 });
-  assert.deepEqual(broadcasts, [
-    ["active-account-scope-changed", { accountId: "account-a", authGeneration: 1 }],
-  ]);
-});
-
-test("a rotated bearer hides the scope until the session is validated again", async () => {
-  tokenState = { token: "token-b", generation: 2 };
+  databaseScopes.length = 0;
+  connectorCalls.length = 0;
+  for (const account of ["remote-account", null]) {
+    const result = await setScope(account, 3);
+    assert.equal(result.success, false);
+    assert.equal(result.code, "LOCAL_ONLY");
+  }
   assert.equal(await getScope(), null);
-  await setScope("account-a", 2);
-  assert.deepEqual(await getScope(), { accountId: "account-a", authGeneration: 2 });
-});
-
-test("a rejected scope request changes nothing and broadcasts nothing", async () => {
-  tokenState = { token: "token-b", generation: 3 };
-  broadcasts.length = 0;
-  const result = await setScope("account-b", 2);
-  assert.equal(result.success, false);
-  assert.equal(result.code, "AUTH_CONTEXT_CHANGED");
+  assert.equal(readBinding(), null);
+  assert.deepEqual(databaseScopes, []);
+  assert.deepEqual(connectorCalls, []);
   assert.deepEqual(broadcasts, []);
 });
 
-test("a validated sign-out clears the scope and broadcasts the clearing", async () => {
-  tokenState = { token: null, generation: 4 };
-  broadcasts.length = 0;
-  assert.deepEqual(await setScope(null, 4), { success: true });
-  assert.equal(await getScope(), null);
-  assert.deepEqual(broadcasts, [["active-account-scope-changed", null]]);
+test("legacy bearer IPC cannot read, rotate, or clear stored credentials", async () => {
+  tokenState = { token: "legacy-token", generation: 4 };
+  for (const channel of [
+    "auth-get-token",
+    "auth-get-token-state",
+    "auth-set-token",
+    "auth-clear-session",
+  ]) {
+    const result = await handlers.get(channel)({ sender: {} }, "replacement", 4);
+    assert.equal(result.success, false, channel);
+    assert.equal(result.code, "LOCAL_ONLY", channel);
+    assert.equal(JSON.stringify(result).includes("legacy-token"), false);
+  }
+  assert.deepEqual(tokenState, { token: "legacy-token", generation: 4 });
 });
 
-test("a scope change stops connects another account started, after the scope moves", async () => {
-  tokenState = { token: "token-c", generation: 5 };
-  connectorCalls.length = 0;
-  await setScope("account-c", 5);
-  await setScope(null, 5);
-  assert.deepEqual(connectorCalls, [
-    ["accountChanged", "account-c"],
-    ["notifyStatusChanged"],
-    ["accountChanged", null],
-    ["notifyStatusChanged"],
-  ]);
-});
-
-test("a sign-out in main stops connects without waiting for the renderer", async () => {
-  tokenState = { token: "token-d", generation: 6 };
-  await setScope("account-d", 6);
-  connectorCalls.length = 0;
-
-  // A rotated token isn't another account: connects keep running.
-  handleAuthTokenChange({ generation: 7, token: "token-e" });
-  assert.deepEqual(connectorCalls, [["notifyStatusChanged"]]);
-
-  connectorCalls.length = 0;
-  databaseScopes.length = 0;
-  broadcasts.length = 0;
-  handleAuthTokenChange({ generation: 8, token: null });
-  assert.deepEqual(connectorCalls, [["accountChanged", null], ["notifyStatusChanged"]]);
-  assert.equal(readBinding(), null);
-  assert.deepEqual(databaseScopes, [null]);
-  assert.deepEqual(broadcasts, [
-    ["active-account-scope-changed", null],
-    ["auth-token-state-changed", { generation: 8, hasToken: false }],
-  ]);
-});
-
-test("meeting prompt retirement precedes scope mutation and skips a true no-op", async () => {
-  tokenState = { token: "meeting-test-token", generation: 20 };
-  const originalManager = fakeThis.windowManager;
-  const calls = [];
-  fakeThis.windowManager = {
-    retireMeetingNotificationScope: () => calls.push(databaseManager.activeAccountId),
-  };
-  databaseManager.activeAccountId = "old-account";
-  await setScope("meeting-account", 20);
-  assert.deepEqual(calls, ["old-account"]);
-  databaseManager.activeAccountId = "meeting-account";
-  await setScope("meeting-account", 20);
-  assert.deepEqual(calls, ["old-account"]);
-  handleAuthTokenChange({ token: "rotated", generation: 21 });
-  assert.deepEqual(calls, ["old-account", "meeting-account"]);
-  handleAuthTokenChange({ token: null, generation: 22 });
-  assert.deepEqual(calls, ["old-account", "meeting-account", "meeting-account"]);
-  fakeThis.windowManager = originalManager;
-});
-
-test("activation storage failure cannot prevent clearing the local bearer", async () => {
-  const manager = fakeThis.metaActivation;
-  fakeThis.metaActivation = {
-    close: async () => {
-      throw new Error("disk full");
-    },
-  };
-  tokenState = { token: "must-clear", generation: 30 };
-  try {
-    const result = await handlers.get("auth-clear-session")({ sender: {} });
-    assert.equal(result.success, true);
-    assert.equal(tokenState.token, null);
-    assert.equal(tokenState.generation, 31);
-  } finally {
-    fakeThis.metaActivation = manager;
+test("the real IPC registry denies checkout, cloud inference and account deletion", async () => {
+  for (const channel of [
+    "cloud-checkout",
+    "cloud-billing-portal",
+    "cloud-transcribe",
+    "cloud-reason",
+    "delete-account-data",
+  ]) {
+    const result = await handlers.get(channel)({ sender: {} }, {});
+    assert.equal(result.code, "LOCAL_ONLY", channel);
+    assert.equal(result.success, false, channel);
   }
 });

@@ -828,6 +828,20 @@ class ReasoningService extends BaseReasoningService {
     config: ReasoningConfig & { systemPrompt: string },
     tools?: Record<string, import("ai").Tool>
   ): AsyncGenerator<AgentStreamChunk, void, unknown> {
+    if (window.electronAPI?.localOnly === true) {
+      if (config.inferenceScope !== "dictationAgent") {
+        throw new Error("Use the Hina voice shortcut to send commands to Hina Connector.");
+      }
+      if (localStorage.getItem("hinaConnectorEnabled") !== "true") {
+        throw new Error("Configure and test Hina Connector in Settings before sending a command.");
+      }
+      model = "hina";
+      provider = "custom";
+      config = {
+        ...config,
+        lanUrl: getSettings().dictationAgentRemoteUrl || "http://127.0.0.1:3210",
+      };
+    }
     ({ model, provider, config } = this.resolveManagedScope(
       model,
       provider,

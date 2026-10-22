@@ -1,7 +1,18 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+const Module = require("node:module");
+const originalLoad = Module._load;
+Module._load = function localAnalyticsStubs(request, parent, isMain) {
+  if (request === "electron")
+    return {
+      app: { getPath: () => require("node:os").tmpdir() },
+      ipcMain: { handle() {}, on() {} },
+    };
+  return originalLoad.call(this, request, parent, isMain);
+};
 const IPCHandlers = require("../../src/helpers/ipcHandlers");
+Module._load = originalLoad;
 
 function completeBatch(overrides = {}) {
   return {

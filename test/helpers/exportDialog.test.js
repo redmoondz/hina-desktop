@@ -55,6 +55,10 @@ const electronStub = {
 
 Module._load = function loadWithMocks(request, parent, isMain) {
   if (request === "electron") return electronStub;
+  // Keep the production gateway real; broad helper stubs must not swallow IPC registration.
+  if (parent?.filename === handlersModulePath && request === "./localOnlyPolicy") {
+    return originalLoad.call(this, request, parent, isMain);
+  }
   if (
     parent?.filename === handlersModulePath &&
     (request.startsWith("./") || request.startsWith("../"))

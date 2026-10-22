@@ -413,7 +413,9 @@ export function useChatStreaming({
           ].includes(llmConfig.provider);
         const localModelCanUseTool =
           isLocalProvider && estimateModelSizeB(llmConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
-        const supportsTools = isCloudAgent || !isLocalProvider || localModelCanUseTool;
+        const isLocalDesktop = window.electronAPI?.localOnly === true;
+        const supportsTools =
+          !isLocalDesktop && (isCloudAgent || !isLocalProvider || localModelCanUseTool);
 
         const scope = searchScopeRef.current;
         const policy = usePolicyStore.getState();
@@ -421,8 +423,9 @@ export function useChatStreaming({
         // so any connected provider enables it.
         const calendarConnected =
           settings.gcalConnected || settings.mcalConnected || settings.appleCalendarConnected;
-        const webSearchEnabled = isWebSearchAllowed(policy);
-        const connectorPlan = hasConnectorPlan(getUsageState(), readIsSubscribed());
+        const webSearchEnabled = !isLocalDesktop && isWebSearchAllowed(policy);
+        const connectorPlan =
+          !isLocalDesktop && hasConnectorPlan(getUsageState(), readIsSubscribed());
         let registry: ToolRegistry | null = null;
         let connectorsOffered = false;
         if (supportsTools) {
@@ -471,32 +474,37 @@ export function useChatStreaming({
 
         // Named in the prompt so the model says how to turn a capability on
         // instead of claiming it can't; built per send, outside the registry cache.
-        const unavailable = resolveUnavailableCapabilities({
-          supportsTools,
-          isSignedIn: settings.isSignedIn,
-          webSearch: { allowed: webSearchEnabled, blockedByOrg: isWebSearchBlockedByOrg(policy) },
-          calendarConnected,
-          connectors: allowConnectors
-            ? {
-                hasPlan: connectorPlan,
-                allowed: isConnectorsAllowed(policy),
-                blockedByOrg: isConnectorsBlockedByOrg(policy),
-                statuses: useConnectorStatusStore.getState().statuses,
-              }
-            : undefined,
-          locations: {
-            account: `${t("sidebar.settings")} → ${t("settingsModal.sections.account.label")}`,
-            plans: `${t("sidebar.settings")} → ${t("settingsModal.sections.plansBilling.label")}`,
-            calendars: `${t("sidebar.integrations")} → ${t("integrations.nav.sections.calendars")}`,
-            connectors: `${t("sidebar.integrations")} → ${t("integrations.nav.sections.connectors")}`,
-            models: `${t("sidebar.settings")} → ${t("settingsModal.sections.llms.label")}`,
-          },
-        });
+        const unavailable = isLocalDesktop
+          ? []
+          : resolveUnavailableCapabilities({
+              supportsTools,
+              isSignedIn: settings.isSignedIn,
+              webSearch: {
+                allowed: webSearchEnabled,
+                blockedByOrg: isWebSearchBlockedByOrg(policy),
+              },
+              calendarConnected,
+              connectors: allowConnectors
+                ? {
+                    hasPlan: connectorPlan,
+                    allowed: isConnectorsAllowed(policy),
+                    blockedByOrg: isConnectorsBlockedByOrg(policy),
+                    statuses: useConnectorStatusStore.getState().statuses,
+                  }
+                : undefined,
+              locations: {
+                account: `${t("sidebar.settings")} → ${t("settingsModal.sections.account.label")}`,
+                plans: `${t("sidebar.settings")} → ${t("settingsModal.sections.plansBilling.label")}`,
+                calendars: `${t("sidebar.integrations")} → ${t("integrations.nav.sections.calendars")}`,
+                connectors: `${t("sidebar.integrations")} → ${t("integrations.nav.sections.connectors")}`,
+                models: `${t("sidebar.settings")} → ${t("settingsModal.sections.llms.label")}`,
+              },
+            });
 
         // A note's chat is about its note: other notes up front would compete with
         // it, and search_notes still reaches them when it doesn't answer.
         const [ragContext, attendeesContext] = await Promise.all([
-          openNoteRef.current ? "" : buildRAGContext(userText, scope),
+          isLocalDesktop || openNoteRef.current ? "" : buildRAGContext(userText, scope),
           connectorsOffered ? buildNoteAttendeesContext(noteMeetingRef.current) : "",
         ]);
         if (cancelled() || !mountedRef.current) return;
@@ -527,7 +535,7 @@ export function useChatStreaming({
         // jargon — same suffix the dictation prompts carry.
         let systemPrompt = appendDictionarySuffix(
           getAgentSystemPrompt(registry?.getAll(), libraryContext || undefined, {
-            unavailable: nameUnavailableCapabilities ? unavailable : [],
+            unavailable: !isLocalDesktop && nameUnavailableCapabilities ? unavailable : [],
             toolTrace: registry !== null,
             openNote: openNoteContext || undefined,
             openNoteTranscriptPreview: currentNote.transcriptPreview,

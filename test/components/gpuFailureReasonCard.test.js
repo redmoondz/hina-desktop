@@ -84,12 +84,16 @@ function settle() {
 
 async function mountPicker(t, vulkanStatus, cudaStatus = cudaPack(), gpuAccelerated = false) {
   installBrowserGlobals(t, {
+    initialStorage: { uiLanguage: "en" },
     window: { location: { search: "" }, electronAPI: { getPlatform: () => "win32" } },
   });
   const vite = await createRendererServer(t, {
     cachePrefix: "openwhispr-gpu-failure-reason-",
     resolveAlias: { "@": path.resolve(__dirname, "../../src") },
   });
+  // Assertions below name English labels; the host OS may use another locale.
+  const { default: i18n } = await vite.ssrLoadModule("/i18n.ts");
+  await i18n.changeLanguage("en");
   const container = installHookDom(t);
   // `status` is the Vulkan pack's; `calls` lists the pack IPCs the card made
   const pack = {

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { localDesktopSettings, persistLocalDesktopSettings } from "../helpers/localDesktopSettings";
 import { API_ENDPOINTS } from "../config/constants";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
@@ -74,6 +75,7 @@ let _ReasoningService: typeof import("../services/ReasoningService").default | n
 // dereference the bare localStorage global, and test harnesses import this
 // store with partial window stubs that don't define it.
 const isBrowser = typeof window !== "undefined" && typeof localStorage !== "undefined";
+const isLocalDesktop = isBrowser && window.electronAPI?.localOnly === true;
 
 const DEFAULT_CLOUD_TRANSCRIPTION_PROVIDER = "openai";
 
@@ -1525,6 +1527,8 @@ function syncAfterLocalWrite(method: "syncDictionaryNow" | "syncSnippetsNow"): v
     if (syncService.canSync()) void syncService[method]();
   });
 }
+
+if (isLocalDesktop) persistLocalDesktopSettings(localStorage);
 
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
   uiLanguage: normalizeUiLanguage(
@@ -3221,6 +3225,9 @@ export function selectPolicyEffectiveSettings(
 }
 
 export function getSettings(): SettingsState {
+  if (isLocalDesktop) {
+    return { ...useSettingsStore.getState(), ...localDesktopSettings } as SettingsState;
+  }
   return selectPolicyEffectiveSettings(useSettingsStore.getState(), usePolicyStore.getState());
 }
 
@@ -3325,11 +3332,78 @@ async function migrateScopeCustomKeys(
 
 let hasInitialized = false;
 
+async function initializeLocalDesktopSettings(): Promise<void> {
+  const api = window.electronAPI;
+  persistLocalDesktopSettings(localStorage);
+  useSettingsStore.setState(localDesktopSettings as Partial<SettingsState>);
+  usePolicyStore.setState({ status: "unmanaged", policy: null });
+
+  // Reconcile only the local runtime. No account, provider keys, calendars or sync.
+  try {
+    const [token, models, dictationKey, voiceAgentKey, activeKey, activationMode] =
+      await Promise.all([
+        api?.getDictationAgentCustomKey?.(),
+        api?.listWhisperModels?.(),
+        api?.getDictationKey?.(),
+        api?.getVoiceAgentKey?.(),
+        api?.getActiveDictationKey?.(),
+        api?.getActivationMode?.(),
+      ]);
+    if (token) useSettingsStore.setState({ dictationAgentCustomApiKey: token });
+    const state = useSettingsStore.getState();
+    if (!state.dictationAgentRemoteUrl) {
+      state.setDictationAgentRemoteUrl("http://127.0.0.1:3210");
+    }
+    if (models?.success && state.localTranscriptionProvider === "whisper") {
+      const installed = models.models.filter((model) => model.downloaded);
+      if (!installed.some((model) => model.model === state.whisperModel)) {
+        const preferred = installed.find((model) => model.model === "large-v3-turbo");
+        state.setWhisperModel(preferred?.model || installed[0]?.model || "");
+      }
+    }
+    if (dictationKey) createStringSetter("dictationKey")(dictationKey);
+    if (voiceAgentKey) createStringSetter("voiceAgentKey")(voiceAgentKey);
+    if (activeKey) useSettingsStore.setState({ activeDictationKey: activeKey });
+    if (activationMode) createStringSetter("activationMode")(activationMode);
+    await i18n.changeLanguage(normalizeUiLanguage(state.uiLanguage));
+  } catch {
+    logger.warn("Local runtime preferences could not be fully loaded", {}, "settings");
+  }
+
+  window.addEventListener("storage", (event) => {
+    if (!event.key || event.storageArea !== localStorage || event.newValue === null) return;
+    if (event.key in localDesktopSettings) return;
+    const state = useSettingsStore.getState();
+    if (!(event.key in state) || typeof state[event.key as keyof SettingsState] === "function")
+      return;
+    let value: unknown = event.newValue;
+    if (BOOLEAN_SETTINGS.has(event.key)) value = event.newValue === "true";
+    else if (NUMERIC_SETTINGS.has(event.key)) value = Number(event.newValue);
+    useSettingsStore.setState({ [event.key]: value });
+    if (event.key === "uiLanguage") void i18n.changeLanguage(event.newValue);
+  });
+  api?.onDictationKeyActive?.((key: string) => {
+    useSettingsStore.setState({ activeDictationKey: key });
+  });
+  api?.onSettingUpdated?.(({ key, value }: { key: string; value: unknown }) => {
+    if (key in localDesktopSettings) return;
+    const state = useSettingsStore.getState();
+    if (!(key in state) || typeof state[key as keyof SettingsState] === "function") return;
+    localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
+    useSettingsStore.setState({ [key]: value });
+  });
+}
+
 export async function initializeSettings(): Promise<void> {
   if (hasInitialized) return;
   hasInitialized = true;
 
   if (!isBrowser) return;
+
+  if (isLocalDesktop) {
+    await initializeLocalDesktopSettings();
+    return;
+  }
 
   const state = useSettingsStore.getState();
   let hydratingSecrets = true;

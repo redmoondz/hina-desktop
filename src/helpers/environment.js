@@ -438,7 +438,7 @@ class EnvironmentManager {
   }
 
   getFloatingIconAutoHide() {
-    return this._getKey("FLOATING_ICON_AUTO_HIDE") === "true";
+    return true;
   }
 
   saveFloatingIconAutoHide(enabled) {
@@ -448,7 +448,7 @@ class EnvironmentManager {
   }
 
   getStartMinimized() {
-    return this._getKey("START_MINIMIZED") === "true";
+    return true;
   }
 
   saveStartMinimized(enabled) {

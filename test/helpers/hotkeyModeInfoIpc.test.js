@@ -44,6 +44,10 @@ const electronStub = {
 
 Module._load = function loadWithMocks(request, parent, isMain) {
   if (request === "electron") return electronStub;
+  // Keep the production gateway real; broad helper stubs must not swallow IPC registration.
+  if (parent?.filename === handlersModulePath && request === "./localOnlyPolicy") {
+    return originalLoad.call(this, request, parent, isMain);
+  }
   if (
     parent?.filename === handlersModulePath &&
     (request.startsWith("./") || request.startsWith("../"))
@@ -186,7 +190,7 @@ test("Windows without its key listener reports Hold unavailable", async () => {
   );
 
   assert.equal(info.supportsPushToTalk, false);
-  assert.equal(info.pushToTalkUnavailableReason, "OpenWhispr's key listener isn't available.");
+  assert.equal(info.pushToTalkUnavailableReason, "Hina Desktop's key listener isn't available.");
   assert.equal(info.linuxInputAccessDenied, false);
 });
 

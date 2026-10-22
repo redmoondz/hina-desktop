@@ -1639,22 +1639,15 @@ test("logins are filed under the account the credential in use is bound to, as r
   assert.equal(credentials.read(databaseManager.activeAccountId, "fake"), null);
 });
 
-test("main files connector logins under the credential's account scope, not the database scope", () => {
+test("local startup never constructs account connectors or schedules credential sweeps", () => {
   const source = require("node:fs").readFileSync(
     require("node:path").join(__dirname, "../../../main.js"),
     "utf8"
   );
-  const wiring = source.match(
-    /const getConnectorAccountScope = ([\s\S]*?)\n\s+const connectorCredentials/
-  );
-  assert.ok(wiring, "main.js defines the connector account lookup");
-  assert.match(wiring[1], /accountScopeBinding\.resolveActiveAccountScope\(/);
-  assert.match(wiring[1], /require\("\.\/src\/helpers\/tokenStore"\)\.getState\(\)/);
-  assert.match(
-    wiring[1],
-    /getConnectorAccountId = connectorAccountIdFrom\(getConnectorAccountScope\)/
-  );
-  assert.doesNotMatch(wiring[1], /databaseManager\.activeAccountId/);
+  assert.doesNotMatch(source, /createConnectorManager\(/);
+  assert.doesNotMatch(source, /createConnectors\(/);
+  assert.doesNotMatch(source, /getConnectorAccountScope/);
+  assert.doesNotMatch(source, /sweepExpired\(/);
 });
 
 test("a disconnect that kept a shared grant says so; the IPC can't ask to erase", async () => {

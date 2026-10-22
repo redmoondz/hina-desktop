@@ -1,6 +1,26 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
+test("the local desktop rejects auth before token access or network traffic", async (t) => {
+  const auth = await import("../../src/lib/authRequestContext.ts");
+  const previousWindow = global.window;
+  const previousFetch = global.fetch;
+  t.after(() => {
+    global.window = previousWindow;
+    global.fetch = previousFetch;
+  });
+  global.window = {
+    electronAPI: {
+      localOnly: true,
+      authGetTokenState: () => assert.fail("local auth accessed a token"),
+    },
+  };
+  global.fetch = () => assert.fail("local auth made a network request");
+  await assert.rejects(auth.authContextFetch("https://auth.example.test/api/auth/get-session"), {
+    code: "LOCAL_ONLY",
+  });
+});
+
 function installWindow(state) {
   const previousWindow = global.window;
   global.window = {

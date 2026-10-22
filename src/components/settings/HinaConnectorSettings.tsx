@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { SectionHeader } from "../ui/SettingsSection";
 
 export default function HinaConnectorSettings() {
+  const { t } = useTranslation();
   const settings = useSettingsStore();
   const [url, setUrl] = useState(settings.dictationAgentRemoteUrl || "http://127.0.0.1:3210");
   const [token, setToken] = useState("");
@@ -17,7 +19,7 @@ export default function HinaConnectorSettings() {
 
   async function connect() {
     setBusy(true);
-    setStatus("Checking Hina Connector...");
+    setStatus(t("hinaSettings.connectorChecking"));
     try {
       const key = token || (await window.electronAPI.getDictationAgentCustomKey?.()) || "";
       const result = await window.electronAPI.hinaConnectorRequest({
@@ -37,33 +39,33 @@ export default function HinaConnectorSettings() {
       localStorage.setItem("hinaConnectorTransport", transport);
       setEnabled(true);
       setToken("");
-      setStatus("Connected. Voice Assistant now uses the existing Hina agent.");
+      setStatus(t("hinaSettings.connectorConnected"));
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Connection failed");
+      setStatus(error instanceof Error ? error.message : t("hinaSettings.actionFailed"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-border p-4">
+    <div className="space-y-4 rounded-xl border border-border bg-card p-5">
       <SectionHeader
-        title="Hina Connector"
-        description="Connect Voice Assistant to your existing OpenClaw Hina agent. Speech recognition keeps its own settings."
+        title={t("hinaSettings.connectorTitle")}
+        description={t("hinaSettings.connectorDescription")}
       />
       <label className="block text-xs space-y-1">
-        <span>Connector location</span>
+        <span>{t("hinaSettings.connectorLocation")}</span>
         <select
           className="w-full rounded border border-border bg-background p-2"
           value={transport}
           onChange={(event) => setTransport(event.target.value as "local" | "wsl")}
         >
-          <option value="local">Windows / local machine</option>
-          <option value="wsl">WSL default distribution (Windows)</option>
+          <option value="local">{t("hinaSettings.localMachine")}</option>
+          <option value="wsl">{t("hinaSettings.wsl")}</option>
         </select>
       </label>
       <label className="block text-xs space-y-1">
-        <span>Connector URL</span>
+        <span>{t("hinaSettings.connectorUrl")}</span>
         <Input
           dir="ltr"
           value={url}
@@ -72,7 +74,7 @@ export default function HinaConnectorSettings() {
         />
       </label>
       <label className="block text-xs space-y-1">
-        <span>Bearer token {enabled ? "(leave empty to keep saved token)" : ""}</span>
+        <span>{t(enabled ? "hinaSettings.tokenSaved" : "hinaSettings.token")}</span>
         <Input
           dir="ltr"
           type="password"
@@ -83,26 +85,12 @@ export default function HinaConnectorSettings() {
       </label>
       <div className="flex flex-wrap gap-2">
         <Button size="sm" disabled={busy} onClick={() => void connect()}>
-          Test and connect Hina
+          {t("hinaSettings.connect")}
         </Button>
-        {enabled && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              localStorage.removeItem("hinaConnectorEnabled");
-              setEnabled(false);
-              setStatus(
-                "Hina integration disabled. Choose a provider below to use another assistant."
-              );
-            }}
-          >
-            Disable Hina integration
-          </Button>
-        )}
       </div>
       <p role="status" className="text-xs text-muted-foreground">
-        {status || (enabled ? "Hina integration enabled" : "Hina integration not configured")}
+        {status ||
+          t(enabled ? "hinaSettings.connectorEnabled" : "hinaSettings.connectorUnconfigured")}
       </p>
     </div>
   );

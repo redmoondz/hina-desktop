@@ -2,6 +2,57 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { createRendererServer, installBrowserGlobals } = require("../lib/rendererTestHarness");
 
+test("local desktop routes stale cloud selections to Hina and never initializes provider access", async (t) => {
+  const calls = [];
+  installBrowserGlobals(t, {
+    initialStorage: {
+      hinaConnectorEnabled: "true",
+      dictationAgentRemoteUrl: "http://127.0.0.1:3210",
+    },
+    window: {
+      electronAPI: {
+        localOnly: true,
+        getDictationAgentCustomKey: async () => "saved-token",
+        hinaConnectorRequest: async (args) => {
+          calls.push(args);
+          return { ok: true, reply: "OK" };
+        },
+      },
+    },
+  });
+  const vite = await createRendererServer(t, { cachePrefix: "hina-local-only-" });
+  const service = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
+  t.after(() => service.destroy());
+  const chunks = [];
+  for await (const chunk of service.processTextStreamingAI(
+    [{ role: "user", content: "Hello Hina" }],
+    "old-cloud-model",
+    "openai",
+    { inferenceScope: "dictationAgent", systemPrompt: "Assistant" },
+    {}
+  ))
+    chunks.push(chunk);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].text, "Hello Hina");
+  assert.equal(chunks[0].text, "OK");
+});
+
+test("local desktop without a configured Connector refuses the voice command", async (t) => {
+  installBrowserGlobals(t, { window: { electronAPI: { localOnly: true } } });
+  const vite = await createRendererServer(t, { cachePrefix: "hina-not-configured-" });
+  const service = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
+  t.after(() => service.destroy());
+  await assert.rejects(async () => {
+    for await (const chunk of service.processTextStreamingAI(
+      [{ role: "user", content: "Hello" }],
+      "cloud",
+      "openai",
+      { inferenceScope: "dictationAgent", systemPrompt: "Assistant" }
+    ))
+      assert.fail(JSON.stringify(chunk));
+  }, /Hina Connector/);
+});
+
 test("Voice Assistant reaches Hina through IPC even when local tools are offered", async (t) => {
   const calls = [];
   installBrowserGlobals(t, {

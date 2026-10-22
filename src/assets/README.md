@@ -1,29 +1,7 @@
-# Assets Directory
+# Hina assets
 
-This directory contains app icons and other assets for OpenWhispr.
+The neutral microphone is a placeholder until a custom icon is supplied.
 
-## Required Icons
+`node scripts/generate-hina-icons.cjs` regenerates the application PNG, Windows ICO, macOS ICNS, tray template PNG, and the `hina.icon/Assets/ICON.png` layer for Apple's Icon Composer.
 
-For proper app packaging, you'll need the following icon files:
-
-- `icon.icns` - macOS icon (1024x1024 recommended)
-- `icon.ico` - Windows icon (256x256 recommended)
-- `icon.png` - Linux icon (512x512 recommended)
-
-## Icon Specifications
-
-- **macOS (.icns)**: 1024x1024 pixels, PNG format converted to ICNS
-- **Windows (.ico)**: 256x256 pixels, PNG format converted to ICO
-- **Linux (.png)**: 512x512 pixels, PNG format
-
-## Creating Icons
-
-You can create these icons using:
-
-- Online converters like https://convertio.co/
-- Design tools like Figma, Sketch, or Photoshop
-- Command line tools like ImageMagick
-
-## Placeholder
-
-Until you add your own icons, the app will use system default icons during development.
+On macOS with Xcode, `node scripts/compile-macos-icon.js` compiles `hina.icon` into `Assets.car` using the `hina` app icon name. The application otherwise uses its generated ICNS fallback.
