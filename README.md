@@ -1,5 +1,7 @@
 # Hina Desktop
 
+<img src="src/assets/logo.png" alt="Hina Desktop logo" width="128" height="128" />
+
 A tray application for local voice dictation and sending voice requests to an existing Hina/OpenClaw agent.
 
 - Speech recognition runs on this computer with Whisper or another installed local engine.
@@ -41,7 +43,7 @@ npm run build:hina:win
 
 The output is `dist/win-unpacked/Hina Desktop.exe`. `scripts/hina-install-win.ps1` copies a verified build to a stable per-user location and creates a Start menu shortcut. It refuses to install while Hina is running. `scripts/hina-sync-windows.sh` synchronizes reviewed source to an existing clean Windows checkout while preserving its dependencies and build output; it requires filesystem approval when run from the restricted workspace.
 
-The neutral microphone icon is a placeholder. Regenerate its PNG, ICO, and ICNS variants with `node scripts/generate-hina-icons.cjs`.
+The original application logo is stored in `src/assets/logo.png`. Regenerate its PNG, ICO, ICNS, and macOS tray variants with `node scripts/generate-hina-icons.cjs` after installing dependencies.
 
 Based on MIT-licensed OpenWhispr. Original copyright and licensing notices remain in `LICENSE` and third-party materials.
 

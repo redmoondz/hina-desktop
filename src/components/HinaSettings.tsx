@@ -12,6 +12,7 @@ import { HotkeyInput } from "./ui/HotkeyInput";
 import { Button } from "./ui/button";
 import LanguageSelector from "./ui/LanguageSelector";
 import TitleBar from "./TitleBar";
+import logo from "../assets/icon.png";
 
 function SettingsCard({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -50,6 +51,7 @@ export default function HinaSettings() {
       <TitleBar className="sticky top-0 z-20" />
       <div className="mx-auto max-w-3xl space-y-5 px-4 py-8 sm:px-8">
         <header className="space-y-2">
+          <img src={logo} alt="" width={56} height={56} className="mb-4 rounded-xl" />
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
             {t("hinaSettings.trayApp")}
           </p>

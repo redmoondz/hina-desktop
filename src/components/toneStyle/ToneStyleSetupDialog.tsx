@@ -14,7 +14,7 @@ import {
 import { AppMarkStack, ToneSample } from "./toneStyleVisuals";
 import { CATEGORY_APP_MARKS } from "./appMarks";
 import { dictationCleanupHasModel, turnOnDictationCleanup } from "./dictationCleanup";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/icon.png";
 import notion from "../../assets/icons/apps/notion-glyph.svg";
 import slack from "../../assets/icons/slack.svg";
 import openai from "../../assets/icons/providers/openai.svg";
