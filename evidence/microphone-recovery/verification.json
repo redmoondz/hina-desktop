@@ -1,0 +1,32 @@
+{
+  "date": "2026-10-22",
+  "problem": [
+    "Duplicate native hotkey events could toggle recording off within 60 milliseconds.",
+    "Local Hina conversations could fail while capturing an external desktop selection."
+  ],
+  "behavior": {
+    "tap": "One press starts recording; a subsequent press stops recording. Native repeat events share the existing 600 ms repeat gate.",
+    "push": "Physical key down starts assistant recording; physical release stops it.",
+    "localConversation": "Commands go to the assistant panel without probing or editing an external selection. Explicit panel selections remain conversational context."
+  },
+  "verification": {
+    "regressionTests": { "passed": 25, "failed": 0 },
+    "qualityCheck": "passed; existing lint warnings remain",
+    "rendererBuild": "passed",
+    "windowsPackaging": "passed",
+    "installedArchiveMatchesVerifiedBuild": true,
+    "installedRuntime": {
+      "activationMode": "tap",
+      "localOnly": true,
+      "selectionCaptureSkipped": true,
+      "panelRouteWorks": true,
+      "externalTextDelivery": false,
+      "windowsVoices": [
+        "Microsoft David Desktop",
+        "Microsoft Zira Desktop",
+        "Microsoft Irina Desktop"
+      ]
+    },
+    "limitation": "A real spoken conversation after installation still needs user confirmation. Runtime route verification made no agent request."
+  }
+}

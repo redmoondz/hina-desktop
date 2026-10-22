@@ -1038,6 +1038,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   // only matters when auto-paste could deliver to that caret, so the flag
   // spares the main process a binary spawn otherwise.
   beginSelectionCapture() {
+    if (window.electronAPI?.localOnly) {
+      this.selectionCapturePromise = null;
+      return;
+    }
     this.selectionCapturePromise =
       window.electronAPI?.captureSelectedText?.({
         probeEditable: Boolean(getSettings().autoPasteEnabled),
@@ -2985,10 +2989,9 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   async processAgentCommand(text, model, agentName, config, wasCancelled = neverCancelled) {
     if (wasCancelled()) return text;
     const assistantSelectionContext = this.consumeAssistantSelectionContext();
-    if (assistantSelectionContext) {
-      // An in-panel selection is conversational context, not an editable OS
-      // target. Keep it on the existing panel-first route and leave the
-      // external selection replacement path completely untouched.
+    if (window.electronAPI?.localOnly || assistantSelectionContext) {
+      // Local Hina commands belong to the conversation. Explicit panel
+      // selections remain context without probing the external clipboard.
       this.selectionCapturePromise = null;
       return this._bankPanelAgentCommand(text, agentName, config, {
         selectedContext: assistantSelectionContext,

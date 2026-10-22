@@ -1,7 +1,7 @@
 // Chromium picks the display backend before JS runs, so appendSwitch is too
 // late — the flag has to come from a relaunch.
 const { XWAYLAND_FLAG, shouldForceXWayland } = require("./src/helpers/xwayland");
-const { createHotkeyRepeatGate } = require("./src/helpers/hotkeyRepeatGate");
+const { createVoiceAgentHotkeyHandler } = require("./src/helpers/voiceAgentHotkeyHandler");
 const { shouldDisableGpuCompositing } = require("./src/helpers/linuxGpuCompositing");
 
 if (shouldForceXWayland(process.argv)) {
@@ -640,24 +640,11 @@ async function startApp() {
   // Set up voice agent hotkey (dictation routed straight to the dictation
   // agent, bypassing cleanup). Tap-only slots gate autorepeat like the
   // dictation toggle does.
-  const isVoiceAgentPress = createHotkeyRepeatGate();
-  const voiceAgentHotkeyCallback = (key, phase) => {
-    if (
-      ["win32", "linux"].includes(process.platform) &&
-      windowManager.getActivationMode() === "push"
-    ) {
-      if (phase === "down")
-        windowManager.startWindowsPushToTalk(
-          key || hotkeyManager.getSlotHotkeys("voiceAgent")[0],
-          "assistant"
-        );
-      if (phase === "up") windowManager.handleWindowsPushKeyUp(key);
-      return;
-    }
-    if (process.platform === "win32" && windowsKeyManager?.isWatchingKey?.(key)) return;
-    if (!isVoiceAgentPress()) return;
-    windowManager.sendToggleVoiceAgent();
-  };
+  const voiceAgentHotkeyCallback = createVoiceAgentHotkeyHandler({
+    windowManager,
+    hotkeyManager,
+    nativeKeyManager: windowsKeyManager,
+  });
   windowManager._voiceAgentHotkeyCallback = voiceAgentHotkeyCallback;
 
   const savedVoiceAgentKey = environmentManager.getVoiceAgentKey?.() || "";
@@ -1136,11 +1123,7 @@ async function startApp() {
         return;
       }
       if (hotkeyManager.slotHasHotkey("voiceAgent", key)) {
-        if (windowManager.getActivationMode() === "push") {
-          windowManager.startWindowsPushToTalk(key, "assistant");
-        } else {
-          windowManager.sendToggleVoiceAgent();
-        }
+        voiceAgentHotkeyCallback(key, "down", true);
       } else if (hotkeyManager.slotHasHotkey("translation", key)) {
         windowManager.sendToggleTranslation();
       } else if (hotkeyManager.slotHasHotkey("meeting", key)) {
@@ -1150,6 +1133,10 @@ async function startApp() {
 
     // Both recording slots need the physical release in push mode.
     const dispatchNativeKeyUp = (key) => {
+      if (hotkeyManager.slotHasHotkey("voiceAgent", key)) {
+        voiceAgentHotkeyCallback(key, "up", true);
+        return;
+      }
       if (
         !hotkeyManager.slotHasHotkey("dictation", key) &&
         !hotkeyManager.slotHasHotkey("voiceAgent", key)

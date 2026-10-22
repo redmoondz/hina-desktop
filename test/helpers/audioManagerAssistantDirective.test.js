@@ -37,6 +37,30 @@ function managerWithCapture(createManager, capture) {
   };
 }
 
+test("local Hina commands reach the panel even if desktop selection capture is unavailable", async (t) => {
+  const { createManager } = await loadAudioManager(t, {
+    cachePrefix: "hina-selection-independent-",
+    settingsKey: "__hinaSelectionIndependentSettings",
+  });
+  globalThis.window.electronAPI.localOnly = true;
+  const { manager } = managerWithCapture(createManager, null);
+  manager.voiceAgentRequested = true;
+  globalThis.window.electronAPI.captureSelectedText = () => {
+    throw new Error("Desktop clipboard must not be read for local conversations");
+  };
+  manager.beginSelectionCapture();
+  assert.equal(manager.selectionCapturePromise, null);
+  manager.consumeSelectionCapture = async () => {
+    throw new Error("Clipboard selection is unavailable");
+  };
+  const result = await manager.processAgentCommand("Check my GPU", "hina", "Hina", {
+    selectionEditReachable: true,
+  });
+  assert.equal(result, "Check my GPU");
+  assert.equal(manager.pendingAssistantConversation.transcript, "Check my GPU");
+  assert.equal(manager.pendingAssistantConversation.deliverySessionId, undefined);
+});
+
 test("a standalone command banks a panel directive and returns the transcript", async (t) => {
   const { createManager } = await loadAudioManager(t, {
     cachePrefix: "openwhispr-assistant-standalone-",
