@@ -21,6 +21,11 @@ Keep the complete `win-unpacked` directory together. Copying only the executable
 does not produce a usable app. The local build is unsigned and is not an NSIS
 installer. Windows may ask for confirmation before launching an unsigned app.
 
+The complete directory is also available as
+`dist/Hina-Desktop-0.1.0-win-x64-portable.zip`. Extract it and launch
+`win-unpacked/Hina Desktop.exe`. Checksums are recorded in
+`evidence/v0.1/build-manifest.json`.
+
 For a fresh checkout with Node 24, run `npm ci`, `npm run prebuild:win`,
 `npx electron-rebuild --force --which-module better-sqlite3`, and
 `npm run build:hina:win`. The manual GitHub workflow `Hina Desktop Windows`

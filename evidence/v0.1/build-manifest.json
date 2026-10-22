@@ -1,0 +1,21 @@
+{
+  "sourceCommit": "cbeb019",
+  "platform": "win32-x64",
+  "unsigned": true,
+  "files": {
+    "win-unpacked/Hina Desktop.exe": {
+      "bytes": 223924736,
+      "sha256": "462abbc7a161c45bc947b73ad184c397354b615bc86463fcb48b4786529dc6af"
+    },
+    "win-unpacked/resources/app.asar": {
+      "bytes": 89101299,
+      "sha256": "bdf89e2df110c98440b458ce6d83e6640c6c02d8d733af6631a7daac3d7ec28e"
+    },
+    "Hina-Desktop-0.1.0-win-x64-portable.zip": {
+      "bytes": 349620562,
+      "sha256": "ab32703a33380e47fe23df75499a19e6e1ad084a6619f8d13279e3bd768c3b7e"
+    }
+  },
+  "archiveIntegrity": "passed",
+  "archiveMembers": 355
+}
