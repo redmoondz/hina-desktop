@@ -106,7 +106,12 @@ require("dotenv").config({
 // Chromium's Windows-only occlusion tracker misclassifies the always-on-top
 // transparent pill as occluded, throttling its renderer and jittering animations.
 if (process.platform === "win32") {
-  app.commandLine.appendSwitch("disable-features", "CalculateNativeWinOcclusion");
+  // Keep microphone gain digital: WebRTC must not change the user's Windows
+  // input volume while normalizing quiet speech.
+  app.commandLine.appendSwitch(
+    "disable-features",
+    "CalculateNativeWinOcclusion,WebRtcAllowInputVolumeAdjustment"
+  );
 }
 
 // Fix transparent window flickering on Linux: --enable-transparent-visuals requires

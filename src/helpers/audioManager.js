@@ -1209,14 +1209,17 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   async getAudioConstraints(forceDefaultMic = false, refreshSystemDefault = false) {
     const settings = getSettings();
 
-    // All browser audio processing disabled to avoid OS-level side-effects.
-    // AGC off: Chromium's AGC on Windows mutates the system mic volume via WASAPI (#476).
-    // Echo cancellation and noise suppression off to avoid latency and speech distortion.
+    // Local Windows capture needs digital gain control for quiet USB mics.
+    // main.js disables WebRtcAllowInputVolumeAdjustment so this cannot adjust
+    // the system input volume (#476). Other platforms keep AGC disabled.
+    // Echo cancellation and noise suppression stay off to avoid distortion.
     // Stereo recording required — mono WebM breaks silence detection on Linux/PipeWire (#472).
-    const noProcessing = {
+    const captureOptions = {
       echoCancellation: false,
       noiseSuppression: false,
-      autoGainControl: false,
+      autoGainControl: Boolean(
+        window.electronAPI?.localOnly && window.electronAPI?.getPlatform?.() === "win32"
+      ),
       channelCount: 2,
     };
 
@@ -1227,7 +1230,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       this.cachedMicDeviceId !== this.rejectedMicDeviceId
     ) {
       return {
-        audio: { deviceId: { exact: this.cachedMicDeviceId }, ...noProcessing },
+        audio: { deviceId: { exact: this.cachedMicDeviceId }, ...captureOptions },
       };
     }
 
@@ -1252,7 +1255,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           },
           "audio"
         );
-        return { audio: { deviceId: { exact: deviceId }, ...noProcessing } };
+        return { audio: { deviceId: { exact: deviceId }, ...captureOptions } };
       }
 
       logger.debug(
@@ -1268,7 +1271,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       );
     }
 
-    return { audio: noProcessing };
+    return { audio: captureOptions };
   }
 
   async cacheMicrophoneDeviceId() {
@@ -3366,12 +3369,16 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   async processTranscriptionCore(text, source, wasCancelled = neverCancelled) {
     const normalizedText = typeof text === "string" ? text.trim() : "";
 
-    if (!normalizedText) {
+    // Whisper can emit punctuation for an almost silent recording. It is not
+    // a spoken assistant command and must not start an agent request.
+    if (!normalizedText || (this.voiceAgentRequested && !/[\p{L}\p{N}]/u.test(normalizedText))) {
       logger.logReasoning("TRANSCRIPTION_EMPTY_SKIPPING_REASONING", {
         source,
-        reason: "Empty text after normalization",
+        reason: normalizedText
+          ? "Punctuation-only assistant transcript"
+          : "Empty text after normalization",
       });
-      return normalizedText;
+      return "";
     }
     if (wasCancelled()) return normalizedText;
 
