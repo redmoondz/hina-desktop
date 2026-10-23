@@ -69,6 +69,7 @@ const AUTO_COPY_FEEDBACK_MS = 6000;
 interface AssistantPanelProps {
   /** Voice command waiting to be sent into the conversation (consumed on mount and on change). */
   pendingCommand: AssistantCommand | null;
+  textInputRequest?: number;
   onCommandConsumed: (id: number) => void;
   onCommandDiscarded: (id: number) => void;
   onCommandSettled: (id: number, options?: { showPanel?: boolean }) => void;
@@ -95,6 +96,7 @@ const StableAssistantMarkdown = memo(MarkdownRenderer);
 
 export function AssistantPanel({
   pendingCommand,
+  textInputRequest = 0,
   onCommandConsumed,
   onCommandDiscarded,
   onCommandSettled,
@@ -613,6 +615,7 @@ export function AssistantPanel({
           </div>
         )}
         <ChatInput
+          key={textInputRequest}
           agentState={historyReady && !submissionInFlight ? streaming.agentState : "thinking"}
           partialTranscript=""
           onTextSubmit={handleTextSubmit}
@@ -621,7 +624,7 @@ export function AssistantPanel({
               ? streaming.cancelStream
               : undefined
           }
-          autoFocus={historyReady && open && messages.length === 0}
+          autoFocus={historyReady && open && (textInputRequest > 0 || messages.length === 0)}
           className="px-3 pb-3"
         />
 

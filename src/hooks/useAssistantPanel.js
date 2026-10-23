@@ -35,6 +35,7 @@ export function useAssistantPanel({
   const [footerPhase, setFooterPhase] = useState("pill");
   const [pendingCommand, setPendingCommand] = useState(null);
   const [conversationId, setConversationId] = useState(null);
+  const [textInputRequest, setTextInputRequest] = useState(0);
 
   const openRef = useRef(open);
   const closingRef = useRef(false);
@@ -118,6 +119,11 @@ export function useAssistantPanel({
       });
     });
   }, [requestMainWindowSize]);
+
+  const openTextInput = useCallback(async () => {
+    setTextInputRequest((current) => current + 1);
+    await openPanel();
+  }, [openPanel]);
 
   const beginThinking = useCallback(() => {
     clearTimeout(closeTimerRef.current);
@@ -325,6 +331,8 @@ export function useAssistantPanel({
     setResponseReady,
     setConversationId,
     openPanel,
+    openTextInput,
+    textInputRequest,
     beginThinking,
     handleCommand,
     handleResponseContent,

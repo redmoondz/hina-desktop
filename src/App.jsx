@@ -8,6 +8,7 @@ import { useWindowDrag } from "./hooks/useWindowDrag";
 import { useLinuxPillInteractivity } from "./hooks/useLinuxPillInteractivity";
 import { useAudioRecording } from "./hooks/useAudioRecording";
 import { useAssistantFollowUpThinking, useAssistantPanel } from "./hooks/useAssistantPanel";
+import { openAssistantTextInput, shouldOpenAssistantTextInput } from "./helpers/assistantTextInput";
 import { useOnboardingAssistantDemo } from "./hooks/useOnboardingAssistantDemo";
 import { useLiveTranscriptPanel } from "./hooks/useLiveTranscriptPanel";
 import { useMainWindowSizeOwner } from "./hooks/useMainWindowSizeOwner";
@@ -547,6 +548,12 @@ export default function App() {
     : VOICE_PILL_FOOTPRINT.idle;
   const activateVoicePill = () => {
     if (!pillIsInteractive) return;
+    if (shouldOpenAssistantTextInput({ isAssistantVoice, isRecording, isPreparing, hasDragged })) {
+      setIsCommandMenuOpen(false);
+      liveTranscript.close({ suppress: true });
+      void openAssistantTextInput(cancelRecording, assistant.openTextInput);
+      return;
+    }
     if (canReopenLiveTranscript) {
       liveTranscript.reopen();
       return;
@@ -812,6 +819,7 @@ export default function App() {
         {activeVoicePanelMode === "assistant" && assistant.mounted && (
           <AssistantPanel
             pendingCommand={assistant.pendingCommand}
+            textInputRequest={assistant.textInputRequest}
             onCommandConsumed={assistant.handleCommandConsumed}
             onCommandDiscarded={assistant.handleCommandDiscarded}
             onCommandSettled={assistant.handleCommandSettled}
