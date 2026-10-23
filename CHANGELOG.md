@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-23
+
+- Add text input from the agent recording overlay, with silent text replies.
+- Add Connector connection checks, portable configuration and request timeouts.
+- Improve Windows push-to-talk, recording cancellation and agent response routing.
+- Add configurable Windows speech voices and response wait indicators.
+- Apply Hina branding and repair mobile Expo dependency checks.
+
 ## [1.10.4] - 2026-10-21
 
 Tone & Style writes your dictation, and the assistant's drafts, in the tone you pick for each kind of app. The AI Summary now writes detailed notes by default, and you can link a calendar event to any note, pick a reasoning effort for each model scope and ask the chat how OpenWhispr works. This release also keeps your transcript when a later step fails, and fixes meeting transcripts, Linux paste and local Whisper on Windows.
