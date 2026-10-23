@@ -172,6 +172,7 @@
     ]
   },
   "linux": {
+    "maintainer": "Hina Desktop contributors <redmoondz@users.noreply.github.com>",
     "target": ["AppImage", "deb", "rpm", "tar.gz"],
     "icon": "src/assets/icon.png",
     "category": "Utility",
