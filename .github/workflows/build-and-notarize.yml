@@ -55,7 +55,7 @@ jobs:
         # a stray format nit, a missing locale key, a fresh advisory. Without
         # this, main goes untested for as long as the drift stands (#1735).
         if: ${{ !cancelled() }}
-        run: npm test -- --test-concurrency=2
+        run: node --import tsx --test --test-concurrency=2 "test/**/*.test.js"
         env:
           # keeps require("electron") from throwing when postinstall was skipped
           ELECTRON_OVERRIDE_DIST_PATH: /tmp

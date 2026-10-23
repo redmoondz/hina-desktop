@@ -108,6 +108,8 @@
         "macos-globe-listener",
         "macos-fast-paste",
         "macos-mic-listener",
+        "macos-calendar-listener",
+        "macos-audio-tap",
         "macos-text-monitor",
         "macos-window-bounds",
         "macos-media-remote",
