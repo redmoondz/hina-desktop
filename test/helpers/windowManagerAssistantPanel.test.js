@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const Module = require("node:module");
+const { pathToFileURL } = require("node:url");
 const requestedMainWindowPositions = [];
 const createdBrowserWindows = [];
 const screenListeners = [];
@@ -344,7 +345,7 @@ test("assistant panel links open in the browser, never an in-app window or a loc
   opened.length = 0;
   let prevented = 0;
   const event = { preventDefault: () => (prevented += 1) };
-  listeners.get("will-navigate")(event, "file:///app/index.html?panel=false");
+  listeners.get("will-navigate")(event, `${pathToFileURL("/app/index.html").href}?panel=false`);
   listeners.get("will-navigate")(event, "https://attacker.example/");
   listeners.get("will-navigate")(event, "file:///C:/Windows/System32/cmd.exe");
   assert.equal(prevented, 2, "only the app's own reload may navigate the window");
