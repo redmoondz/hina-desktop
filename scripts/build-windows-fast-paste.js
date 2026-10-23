@@ -109,15 +109,6 @@ async function tryDownload() {
   return false;
 }
 
-/**
- * Quote a path for use in shell commands on Windows.
- * @param {string} p - Path to quote
- * @returns {string} - Quoted path safe for shell use
- */
-function quotePath(p) {
-  return `"${p.replace(/"/g, '\\"')}"`;
-}
-
 function tryCompile() {
   if (!fs.existsSync(cSource)) {
     log("C source not found, cannot compile locally");
@@ -130,21 +121,18 @@ function tryCompile() {
     {
       name: "MSVC",
       check: { command: "cl", args: [] },
-      useShell: true,
-      getCommand: () =>
-        `cl /O2 /nologo ${quotePath(cSource)} /Fe:${quotePath(outputBinary)} user32.lib`,
+      command: "cl",
+      args: ["/O2", "/nologo", cSource, `/Fe:${outputBinary}`, "user32.lib"],
     },
     {
       name: "MinGW-w64",
       check: { command: "gcc", args: ["--version"] },
-      useShell: false,
       command: "gcc",
       args: ["-O2", cSource, "-o", outputBinary, "-luser32"],
     },
     {
       name: "Clang",
       check: { command: "clang", args: ["--version"] },
-      useShell: false,
       command: "clang",
       args: ["-O2", cSource, "-o", outputBinary, "-luser32"],
     },
@@ -155,7 +143,7 @@ function tryCompile() {
 
     const checkResult = spawnSync(compiler.check.command, compiler.check.args, {
       stdio: "pipe",
-      shell: true,
+      shell: false,
     });
 
     if (checkResult.status !== 0 && checkResult.error) {
@@ -163,23 +151,12 @@ function tryCompile() {
       continue;
     }
 
-    let result;
-    if (compiler.useShell) {
-      const cmd = compiler.getCommand();
-      log(`Compiling with: ${cmd}`);
-      result = spawnSync(cmd, [], {
-        stdio: "inherit",
-        cwd: projectRoot,
-        shell: true,
-      });
-    } else {
-      log(`Compiling with: ${compiler.command} ${compiler.args.join(" ")}`);
-      result = spawnSync(compiler.command, compiler.args, {
-        stdio: "inherit",
-        cwd: projectRoot,
-        shell: false,
-      });
-    }
+    log(`Compiling with: ${compiler.command} ${compiler.args.join(" ")}`);
+    const result = spawnSync(compiler.command, compiler.args, {
+      stdio: "inherit",
+      cwd: projectRoot,
+      shell: false,
+    });
 
     if (result.status === 0 && fs.existsSync(outputBinary)) {
       if (supportsSelectionCopy(outputBinary)) {

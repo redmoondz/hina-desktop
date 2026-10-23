@@ -191,13 +191,12 @@ test("other llama-server failures keep their existing shape", async () => {
 // price the real prompt, chat template and all.
 
 function withStubServer(routes) {
-  // A Map rather than indexing the object: req.url is request-controlled, so a
-  // plain lookup answers /toString or /constructor with an inherited
-  // Object.prototype method and then calls it.
-  const routeTable = new Map(Object.entries(routes));
+  // Dispatch only handlers explicitly registered by the test. Request data
+  // participates in equality checks, never in a property or method lookup.
+  const routeTable = Object.entries(routes);
   return async (run) => {
     const server = http.createServer((req, res) => {
-      const handler = routeTable.get(req.url);
+      const handler = routeTable.find(([route]) => route === req.url)?.[1];
       if (typeof handler !== "function") {
         res.writeHead(404).end();
         return;
@@ -226,6 +225,18 @@ function withStubServer(routes) {
     }
   };
 }
+
+test("stub server rejects unregistered and inherited route names", async () => {
+  await withStubServer({ "/health": () => ({ payload: { ok: true } }) })(async (manager) => {
+    for (const route of ["/missing", "/constructor", "/toString", "/__proto__"]) {
+      const response = await fetch(`http://127.0.0.1:${manager.port}${route}`);
+      assert.equal(response.status, 404, route);
+    }
+    const response = await fetch(`http://127.0.0.1:${manager.port}/health`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { ok: true });
+  });
+});
 
 test("usableContextSize reports the window the server actually has", async () => {
   await withStubServer({

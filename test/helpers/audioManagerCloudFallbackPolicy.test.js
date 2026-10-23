@@ -342,7 +342,7 @@ test("self-hosted mode is never hijacked by a leftover proxied provider", async 
 
   assert.deepEqual(proxyCalls, { mistral: 0, xai: 0, corti: 0 });
   assert.equal(
-    fetched.every((e) => e.startsWith("https://stt.internal.example.com")),
+    fetched.every((e) => new URL(e).origin === "https://stt.internal.example.com"),
     true,
     `unexpected endpoints: ${fetched.join(", ")}`
   );

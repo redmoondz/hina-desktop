@@ -57,7 +57,6 @@ class TrayManager {
     if (!this.updateManager || this.isCheckingForUpdates) return;
     this.isCheckingForUpdates = true;
     this.updateTrayMenu();
-    const t = (key, options) => i18nMain.t(`settingsPage.general.updates.${key}`, options);
     let stage = "checkFailed";
     try {
       if (!this.updateManager.updateDownloaded) {
@@ -66,22 +65,27 @@ class TrayManager {
           const outcome = result.status === "no-releases" ? "noReleases" : "noUpdates";
           await dialog.showMessageBox({
             type: "info",
-            title: t("title"),
-            message: t(`dialogs.${outcome}.title`),
+            title: i18nMain.t("settingsPage.general.updates.title"),
+            message: i18nMain.t(`settingsPage.general.updates.dialogs.${outcome}.title`),
             detail:
               result.status === "no-releases"
-                ? t(`dialogs.${outcome}.description`)
+                ? i18nMain.t(`settingsPage.general.updates.dialogs.${outcome}.description`)
                 : !result.message || result.message === "You are running the latest version"
-                  ? t("dialogs.noUpdates.description")
+                  ? i18nMain.t("settingsPage.general.updates.dialogs.noUpdates.description")
                   : result.message,
           });
           return;
         }
         const choice = await dialog.showMessageBox({
           type: "question",
-          title: t("dialogs.updateAvailable.title"),
-          message: t("dialogs.updateAvailable.description", { version: result.version }),
-          buttons: [t("downloadUpdate", { version: result.version }), i18nMain.t("common.cancel")],
+          title: i18nMain.t("settingsPage.general.updates.dialogs.updateAvailable.title"),
+          message: i18nMain.t("settingsPage.general.updates.dialogs.updateAvailable.description", {
+            version: result.version,
+          }),
+          buttons: [
+            i18nMain.t("settingsPage.general.updates.downloadUpdate", { version: result.version }),
+            i18nMain.t("common.cancel"),
+          ],
           defaultId: 0,
           cancelId: 1,
         });
@@ -92,18 +96,21 @@ class TrayManager {
         if (!this.updateManager.updateDownloaded) {
           await dialog.showMessageBox({
             type: "info",
-            title: t("title"),
-            message: t("dialogs.almostThere.title"),
-            detail: t("dialogs.almostThere.description"),
+            title: i18nMain.t("settingsPage.general.updates.title"),
+            message: i18nMain.t("settingsPage.general.updates.dialogs.almostThere.title"),
+            detail: i18nMain.t("settingsPage.general.updates.dialogs.almostThere.description"),
           });
           return;
         }
       }
       const choice = await dialog.showMessageBox({
         type: "question",
-        title: t("dialogs.installUpdate.title"),
-        message: t("dialogs.installUpdate.description"),
-        buttons: [t("dialogs.installUpdate.confirmText"), i18nMain.t("common.cancel")],
+        title: i18nMain.t("settingsPage.general.updates.dialogs.installUpdate.title"),
+        message: i18nMain.t("settingsPage.general.updates.dialogs.installUpdate.description"),
+        buttons: [
+          i18nMain.t("settingsPage.general.updates.dialogs.installUpdate.confirmText"),
+          i18nMain.t("common.cancel"),
+        ],
         defaultId: 0,
         cancelId: 1,
       });
@@ -114,9 +121,9 @@ class TrayManager {
     } catch {
       await dialog.showMessageBox({
         type: "error",
-        title: t(`dialogs.${stage}.title`),
-        message: t(`dialogs.${stage}.title`),
-        detail: t(`dialogs.${stage}.description`),
+        title: i18nMain.t(`settingsPage.general.updates.dialogs.${stage}.title`),
+        message: i18nMain.t(`settingsPage.general.updates.dialogs.${stage}.title`),
+        detail: i18nMain.t(`settingsPage.general.updates.dialogs.${stage}.description`),
       });
     } finally {
       this.isCheckingForUpdates = false;

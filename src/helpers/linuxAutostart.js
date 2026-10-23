@@ -94,7 +94,9 @@ function ensureIconInstalled() {
 // backslash for the quoting rule, but a literal backslash needs four, since the
 // string rule collapses each pair into one before quoting is applied.
 function quoteExecPath(execPath) {
-  const escaped = execPath.replace(/\\/g, "\\\\\\\\").replace(/(["`$])/g, "\\$1");
+  const escaped = execPath.replace(/[\\"`$]/g, (character) =>
+    character === "\\" ? "\\\\\\\\" : `\\${character}`
+  );
   return `"${escaped}"`;
 }
 

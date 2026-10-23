@@ -2167,6 +2167,10 @@
           "updateAvailable": {
             "description": "有可用更新：v{{version}}",
             "title": "有可用更新"
+          },
+          "noReleases": {
+            "description": "No releases have been published for Hina Desktop yet. Automatic updates will become available after a release is published on GitHub.",
+            "title": "No published releases"
           }
         },
         "downloadUpdate": "下載更新 {{version}}",

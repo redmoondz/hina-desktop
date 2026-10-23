@@ -15,7 +15,7 @@ OpenWhispr is an Electron-based desktop dictation application that uses whisper.
 ### Core Technologies
 
 - **Frontend**: React 19, TypeScript, Tailwind CSS v4, Vite
-- **Desktop Framework**: Electron 41 with context isolation
+- **Desktop Framework**: Electron 42 with context isolation
 - **Database**: better-sqlite3 for local transcription history
 - **UI Components**: shadcn/ui with Radix primitives
 - **Speech Processing**: whisper.cpp + NVIDIA Parakeet (via sherpa-onnx) + OpenAI API

@@ -11,6 +11,8 @@ permissions:
 
 jobs:
   update-nix:
+    # This package still targets the upstream OpenWhispr AppImage.
+    if: github.repository == 'OpenWhispr/openwhispr'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

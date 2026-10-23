@@ -40,7 +40,13 @@ export const TRANSCRIBE_PROMPT_CHARS = 8000;
 // typed, and most of those servers are Whisper-family under a name that never
 // says "whisper".
 export function dictionaryPromptLimit({ provider = "", endpoint = "", model = "" } = {}) {
-  if (provider === "groq" || endpoint.includes("api.groq.com")) return GROQ_PROMPT_CHARS;
+  let endpointHost = "";
+  try {
+    endpointHost = new URL(endpoint).hostname;
+  } catch {
+    // An unset or invalid endpoint cannot identify a provider.
+  }
+  if (provider === "groq" || endpointHost === "api.groq.com") return GROQ_PROMPT_CHARS;
   if (model.toLowerCase().startsWith("gpt-4o")) return TRANSCRIBE_PROMPT_CHARS;
   if (usesTranscriptionKeywords(model)) return TRANSCRIPTION_OVERFLOW_PROMPT_CHARS;
   return WHISPER_PROMPT_CHARS;

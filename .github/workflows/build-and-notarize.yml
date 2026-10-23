@@ -255,7 +255,7 @@ jobs:
 
       - name: Build and Sign Application
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ -z "$AZURE_TENANT_ID" ] || [ -z "$AZURE_CLIENT_ID" ] || [ -z "$AZURE_CLIENT_SECRET" ]; then
             npm run build:win -- --publish never --config electron-builder.unsigned-win.json
           else
             npm run build:win -- --publish never
@@ -371,6 +371,11 @@ jobs:
           API_KEY_PATH=$RUNNER_TEMP/api_key.p8
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
+          if [ -z "$APPLE_CERTIFICATE_BASE64" ] || [ -z "$APPLE_CERTIFICATE_PASSWORD" ] || [ -z "$APPLE_API_KEY_BASE64" ]; then
+            echo "Signing credentials are not configured; building unsigned."
+            exit 0
+          fi
+
           echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > $CERTIFICATE_PATH
           echo "$APPLE_API_KEY_BASE64" | base64 --decode > $API_KEY_PATH
 
@@ -405,7 +410,7 @@ jobs:
           VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.openwhispr.com' }}
           VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
           VITE_OPENWHISPR_OAUTH_CALLBACK_URL: ${{ vars.VITE_OPENWHISPR_OAUTH_CALLBACK_URL }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
+          CSC_IDENTITY_AUTO_DISCOVERY: ${{ env.APPLE_API_KEY != '' && 'true' || 'false' }}
           CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
@@ -413,7 +418,7 @@ jobs:
 
       - name: Verify packaged macOS native binaries
         run: |
-          APP_PATH=$(ls -d dist/mac*/OpenWhispr.app | head -n1)
+          APP_PATH=$(ls -d dist/mac*/"Hina Desktop.app" | head -n1)
           for bin in macos-audio-tap macos-globe-listener macos-fast-paste macos-mic-listener macos-calendar-listener macos-text-monitor macos-window-bounds macos-media-remote; do
             test -x "$APP_PATH/Contents/Resources/bin/$bin" || { echo "Missing in bundle: $bin"; exit 1; }
           done
