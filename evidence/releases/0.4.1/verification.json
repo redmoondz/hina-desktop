@@ -1,0 +1,129 @@
+{
+  "sourceCommit": "d470318eddc3ccda2289efefacde57f6eddb3bcf",
+  "version": "0.4.1",
+  "voice": {
+    "diagnosis": "Quiet microphone recordings were rejected before transcription; punctuation-only Whisper output could still reach the assistant.",
+    "startupProtection": "WebRtcAllowInputVolumeAdjustment disabled on Windows so automatic gain cannot change system microphone volume.",
+    "rawAudioIncluded": false,
+    "diagnosticCaptureComparison": {
+      "automaticGainOff": {
+        "peakRms": 0.02702,
+        "peakAmplitude": 0.0465,
+        "speechWindows": 8,
+        "windows": 45
+      },
+      "automaticGainOn": {
+        "peakRms": 0.09928,
+        "peakAmplitude": 0.29934,
+        "speechWindows": 28,
+        "windows": 45
+      },
+      "echoCancellation": false,
+      "noiseSuppression": false
+    },
+    "initialInstalledRuntimeDiagnostic": {
+      "method": "Browser-AGC diagnostic trial on installed 0.4.0; the final release uses shared application gain instead.",
+      "recognizedLanguage": "ru",
+      "recognizedCharacters": 36,
+      "userConfirmation": "Voice assistant appeared to work after the change.",
+      "systemMicrophoneVolumeBefore": 1,
+      "systemMicrophoneVolumeAfter": 1,
+      "overlayClickOpenedTextInput": true
+    },
+    "automaticGainImplementation": "Shared application AudioWorklet, with native browser AGC disabled",
+    "controls": {
+      "automaticBoostDefaultOnLocalWindows": true,
+      "savedChoicePreserved": true,
+      "manualGainPercent": [0, 400],
+      "maximumAutomaticGain": 8,
+      "localTestMaximumSeconds": 60,
+      "testAudioUploaded": false
+    },
+    "packagedRuntime": {
+      "version": {
+        "app": "0.4.1",
+        "electron": "42.11.18",
+        "sqlite": "3.53.2",
+        "systemVolumeAdjustmentDisabled": true
+      },
+      "captureOptions": {
+        "nativeAutoGain": false,
+        "echoCancellation": false,
+        "noiseSuppression": false,
+        "storedAutoBoost": null
+      },
+      "coldCapture": {
+        "recording": true,
+        "processing": false,
+        "assistant": true,
+        "applicationGainTrack": true,
+        "level": 0.005181881171091583,
+        "contextState": "running"
+      },
+      "afterCancel": {
+        "recording": false,
+        "processing": false
+      },
+      "userConfirmedRealVoiceCommand": true,
+      "normalRestartWithoutDebuggingRequested": true,
+      "normalRestartWithoutDebuggingVerified": true,
+      "diagnosticListenersAfterRestart": 0
+    }
+  },
+  "checks": {
+    "fullSuite": {
+      "passed": 8688,
+      "failed": 0,
+      "skipped": 37,
+      "todo": 1,
+      "durationMs": 734309
+    },
+    "qualityCheck": "passed",
+    "windowsNavigationTests": {
+      "passed": 43,
+      "failed": 0
+    },
+    "workflowLint": "passed",
+    "npmAuditVulnerabilities": 0,
+    "screenshots": {
+      "widths": [1100, 390],
+      "themes": ["light", "dark"],
+      "realAudioWorklet": true,
+      "syntheticMicrophone": true,
+      "nonzeroMeter": true,
+      "localPlayback": true,
+      "javascriptExceptions": 0,
+      "evidence": "evidence/microphone/"
+    },
+    "postReleaseLinuxPackaging": {
+      "commit": "6a5c0d71e",
+      "reason": "Linux distribution packages require maintainer metadata",
+      "validation": "Real electron-builder FpmTarget metadata validation reproduced the missing-author-email failure before the change and passed with explicit Linux maintainer metadata",
+      "ciRerun": "pending"
+    }
+  },
+  "security": {
+    "fixCommit": "1ea385ef8dace4d5103a5356f07df99f3eb8dbf9",
+    "openCodeQLAlerts": 0,
+    "alert12": {
+      "disposition": "false positive",
+      "reason": "Fixed application resource paths passed to spawn with shell:false; no shell interpolation. Transcript input goes over stdin and cannot select the resource filename."
+    }
+  },
+  "distribution": {
+    "workflowRun": "https://github.com/redmoondz/hina-desktop/actions/runs/39940474304",
+    "workflowConclusion": "success",
+    "artifactId": 12495761955,
+    "artifactSha256": "4b23a8657401739197dbaba0e0180dfeab03f598e628dcdb5d164ac0ce0aa1bf",
+    "status": "published",
+    "url": "https://github.com/redmoondz/hina-desktop/releases/tag/v0.4.1",
+    "publishedAt": "2026-10-23T11:48:27Z",
+    "releaseCommit": "d470318eddc3ccda2289efefacde57f6eddb3bcf",
+    "installer": "Hina-Desktop-Setup-0.4.1-x64.exe",
+    "installerBytes": 187063606,
+    "installerSha512": "q9vcnjeJ7RGEM6hLHe5kVerWL5zy5/V53/F9bw7HD4H1sfXTEbjn4SVeUhVYMd0uNhajJDD/snaSO5N2jzj9nw==",
+    "assetVerifier": "passed",
+    "publicLatestRelease": "v0.4.1",
+    "publicUpdateMetadataMatchesVerifiedBuild": true
+  }
+}
