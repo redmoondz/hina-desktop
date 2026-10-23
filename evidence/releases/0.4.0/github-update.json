@@ -1,0 +1,29 @@
+{
+  "source": "real installed Check for Updates tray item and public GitHub release",
+  "mode": "update",
+  "from": "0.3.1",
+  "dialogs": [
+    {
+      "type": "question",
+      "title": "Update Available",
+      "message": "Update available: v0.4.0",
+      "buttons": ["Download Update 0.4.0", "Cancel"]
+    },
+    {
+      "type": "question",
+      "title": "Install Update",
+      "message": "Hina Desktop will restart to apply the update.",
+      "buttons": ["Install & Restart", "Cancel"]
+    }
+  ],
+  "timestamp": "2026-10-23T09:06:42.106Z",
+  "menuLabel": "Check for Updates",
+  "offered": "0.4.0",
+  "downloaded": true,
+  "installRequested": true,
+  "completed": true,
+  "installedVersion": "0.4.0",
+  "installationVerified": true,
+  "passed": true,
+  "release": "https://github.com/redmoondz/hina-desktop/releases/tag/v0.4.0"
+}

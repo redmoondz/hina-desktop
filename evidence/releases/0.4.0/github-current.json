@@ -1,0 +1,17 @@
+{
+  "source": "real installed Check for Updates tray item and public GitHub release",
+  "mode": "current",
+  "from": "0.4.0",
+  "dialogs": [
+    {
+      "type": "info",
+      "title": "Updates",
+      "message": "No Updates",
+      "detail": "You're on the latest version."
+    }
+  ],
+  "timestamp": "2026-10-23T09:07:49.504Z",
+  "menuLabel": "Check for Updates",
+  "downloaded": false,
+  "completed": true
+}
