@@ -27,6 +27,7 @@ jobs:
       - run: npm run quality-check
       - run: node --test test/helpers/windowsUpdateAssets.test.js
       - run: node --import tsx --test test/helpers/hinaConnector.test.js test/helpers/hinaPortableSettings.test.js test/helpers/audioManagerPendingStart.test.js test/helpers/useAudioRecordingPreparationStop.test.js test/helpers/windowsKeyPressLifecycle.test.js test/helpers/hotkeyModifierOnlyNative.test.js test/helpers/windowManagerAssistantPanel.test.js test/helpers/mediaPlayer.test.js test/components/hinaSettingsPanels.test.js test/components/hinaRendererSurface.test.js test/services/hinaVoiceAssistant.test.js test/helpers/dictationAgentInference.test.js test/helpers/secretKeys.test.js test/services/lanReasoningOutput.test.js test/components/fieldDirectionPolicy.test.js test/helpers/updater.test.js test/helpers/trayQuickActions.test.js
+      - run: node --import tsx --test test/helpers/audioManagerWindowsGain.test.js test/helpers/audioManagerVoiceTranscript.test.js test/helpers/localSpeechGate.test.js test/helpers/assistantTextInput.test.js
       - run: npm run prebuild:win
       - run: npx electron-rebuild --force --which-module better-sqlite3
       - name: Build Windows installer and updater metadata
