@@ -1499,6 +1499,23 @@
     "searchPlaceholder": "Sprachen suchen"
   },
   "microphoneSettings": {
+    "processing": {
+      "autoBoost": "Automatic microphone boost",
+      "autoBoostDescription": "Automatically raise quiet speech and reduce gain for loud input.",
+      "manualGain": "Microphone gain",
+      "automatic": "Automatic",
+      "scope": "Applies to dictation and assistant voice input. 100% keeps the original level.",
+      "test": "Test microphone",
+      "start": "Start test",
+      "stop": "Stop test",
+      "opening": "Opening microphone…",
+      "level": "Microphone level",
+      "recording": "Speak a phrase, then stop to listen. The test stops automatically after 60 seconds.",
+      "tooLoud": "The input is too loud. Reduce microphone gain or move farther away.",
+      "testHelp": "Record and play back a phrase with these settings. Test audio stays on this device.",
+      "error": "Unable to record. Check microphone access and the selected device, then try again.",
+      "playback": "Microphone test playback"
+    },
     "builtIn": "(Integriert)",
     "errors": {
       "unableToAccess": "Zugriff auf das Mikrofon nicht möglich. Bitte prüfen Sie die Berechtigungen."

@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { loadAudioManager } = require("./harness/audioManager");
 
-test("local Windows capture amplifies quiet speech for dictation and assistant recordings", async (t) => {
+test("dictation and assistant capture disable native AGC in favor of shared application gain", async (t) => {
   const { createManager, window } = await loadAudioManager(t, {
     cachePrefix: "hina-windows-capture-gain-",
     settingsKey: "__hinaWindowsCaptureGainSettings",
@@ -12,7 +12,7 @@ test("local Windows capture amplifies quiet speech for dictation and assistant r
   for (const voiceAgentRequested of [false, true]) {
     const manager = createManager({ cachedMicDeviceId: "selected-mic", voiceAgentRequested });
     const { audio } = await manager.getAudioConstraints();
-    assert.equal(audio.autoGainControl, true);
+    assert.equal(audio.autoGainControl, false);
     assert.equal(audio.echoCancellation, false);
     assert.equal(audio.noiseSuppression, false);
     assert.equal(audio.channelCount, 2);

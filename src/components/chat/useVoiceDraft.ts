@@ -1,3 +1,4 @@
+import { openMicrophone } from "../../helpers/microphoneProcessing";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useSettings } from "../../hooks/useSettings";
@@ -54,6 +55,8 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
   const levelBufRef = useRef<Float32Array<ArrayBuffer> | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const discardRef = useRef(false);
+  const startingRef = useRef(false);
+  const captureGeneration = useRef(0);
 
   const buildConfig = (): FileTranscriptionConfig => ({
     useLocalWhisper,
@@ -149,10 +152,18 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
   }, [teardownCapture]);
 
   const start = useCallback(async () => {
-    if (recorderRef.current) return;
+    if (recorderRef.current || startingRef.current) return;
+    startingRef.current = true;
+    const generation = captureGeneration.current;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await openMicrophone();
+      if (captureGeneration.current !== generation) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      streamRef.current = stream;
       const context = new AudioContext();
+      contextRef.current = context;
       const source = context.createMediaStreamSource(stream);
       const analyser = context.createAnalyser();
       analyser.fftSize = 256;
@@ -180,7 +191,11 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
       setStatus("recording");
     } catch (error) {
       teardownCapture();
-      onErrorRef.current(error instanceof Error ? error.message : String(error));
+      if (captureGeneration.current === generation) {
+        onErrorRef.current(error instanceof Error ? error.message : String(error));
+      }
+    } finally {
+      startingRef.current = false;
     }
   }, [finishRecording, teardownCapture]);
 
@@ -189,6 +204,7 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
   }, []);
 
   const cancel = useCallback(() => {
+    captureGeneration.current++;
     discardRef.current = true;
     recorderRef.current?.stop();
   }, []);
@@ -196,6 +212,7 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
   // Discard silently if the surface unmounts mid-take.
   useEffect(
     () => () => {
+      captureGeneration.current++;
       discardRef.current = true;
       recorderRef.current?.stop();
     },

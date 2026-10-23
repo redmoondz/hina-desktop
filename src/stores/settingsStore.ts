@@ -1,3 +1,4 @@
+import { normalizeMicGain } from "../helpers/microphoneGain";
 import { create } from "zustand";
 import { localDesktopSettings, persistLocalDesktopSettings } from "../helpers/localDesktopSettings";
 import { API_ENDPOINTS } from "../config/constants";
@@ -274,6 +275,7 @@ function initializeAutoUpdatesDefault() {
 initializeAutoUpdatesDefault();
 
 const BOOLEAN_SETTINGS = new Set([
+  "micAutoBoost",
   "useLocalWhisper",
   "meetingUseLocalWhisper",
   "uploadUseLocalWhisper",
@@ -335,6 +337,7 @@ const ARRAY_SETTINGS = new Set([
 ]);
 
 const NUMERIC_SETTINGS = new Set([
+  "micGainPercent",
   "micWarmHoldSeconds",
   "audioRetentionDays",
   "transcriptRetentionDays",
@@ -1231,6 +1234,8 @@ export interface SettingsState
   setMicrophoneSelectionMode: (mode: MicrophoneSelectionMode) => void;
   setSelectedMicDevice: (deviceId: string, label: string) => void;
   setMicWarmHoldSeconds: (seconds: number) => void;
+  setMicAutoBoost: (enabled: boolean) => void;
+  setMicGainPercent: (percent: number) => void;
 
   setTheme: (value: "light" | "dark" | "auto") => void;
   setCloudBackupEnabled: (value: boolean) => void;
@@ -1647,6 +1652,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   preferBuiltInMic: readBoolean("preferBuiltInMic", false),
   selectedMicDeviceId: readString("selectedMicDeviceId", ""),
   selectedMicDeviceLabel: readString("selectedMicDeviceLabel", ""),
+  // Keep quiet-microphone compensation enabled for local Windows installs.
+  // A saved choice, including an explicit false, always wins.
+  micAutoBoost: readBoolean(
+    "micAutoBoost",
+    isBrowser &&
+      Boolean(window.electronAPI?.localOnly && window.electronAPI?.getPlatform?.() === "win32")
+  ),
+  micGainPercent: normalizeMicGain(readNumber("micGainPercent", 100)),
   micWarmHoldSeconds: snapMicWarmHold(readNumber("micWarmHoldSeconds", 0)),
 
   theme: (() => {
@@ -2427,6 +2440,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setCloudBackupEnabled: createBooleanSetter("cloudBackupEnabled"),
   setInsightsSyncEnabled: createBooleanSetter("insightsSyncEnabled"),
   setTelemetryEnabled: createBooleanSetter("telemetryEnabled"),
+  setMicAutoBoost: createBooleanSetter("micAutoBoost"),
+  setMicGainPercent: (value: number) => {
+    const normalized = normalizeMicGain(value);
+    if (isBrowser) localStorage.setItem("micGainPercent", String(normalized));
+    set({ micGainPercent: normalized });
+  },
   setMicWarmHoldSeconds: (value: number) => {
     const snapped = snapMicWarmHold(value);
     if (isBrowser) localStorage.setItem("micWarmHoldSeconds", String(snapped));
@@ -3899,6 +3918,8 @@ export async function initializeSettings(): Promise<void> {
           key === "audioRetentionDays" ? 30 : (state as unknown as Record<string, unknown>)[key];
       } else if (key === "audioRetentionDays") {
         value = Math.round(parsed);
+      } else if (key === "micGainPercent") {
+        value = normalizeMicGain(parsed);
       } else if (key === "micWarmHoldSeconds") {
         // Same whitelist as the setter — a hand-edited localStorage value
         // synced from another window must not exceed the offered durations.

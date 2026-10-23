@@ -85,6 +85,8 @@ export interface MicrophoneSettings {
   selectedMicDeviceId: string;
   selectedMicDeviceLabel: string;
   micWarmHoldSeconds: number;
+  micAutoBoost: boolean;
+  micGainPercent: number;
 }
 
 export interface ApiKeySettings {
@@ -413,6 +415,10 @@ function useSettingsInternal() {
     selectedMicDeviceId: store.selectedMicDeviceId,
     selectedMicDeviceLabel: store.selectedMicDeviceLabel,
     micWarmHoldSeconds: store.micWarmHoldSeconds,
+    micAutoBoost: store.micAutoBoost,
+    micGainPercent: store.micGainPercent,
+    setMicAutoBoost: store.setMicAutoBoost,
+    setMicGainPercent: store.setMicGainPercent,
     setMicrophoneSelectionMode: store.setMicrophoneSelectionMode,
     setPreferBuiltInMic: store.setPreferBuiltInMic,
     setSelectedMicDevice: store.setSelectedMicDevice,

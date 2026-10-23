@@ -1,3 +1,4 @@
+import { processMicrophoneStream } from "./microphoneProcessing";
 import ReasoningService from "../services/ReasoningService";
 import {
   EMPTY_OUTPUT_MESSAGE_KEY,
@@ -755,7 +756,9 @@ class AudioManager {
             false,
             reason === "devicechange" || reason === "devicechange-ended"
           );
-          return await navigator.mediaDevices.getUserMedia(constraints);
+          return await processMicrophoneStream(
+            await navigator.mediaDevices.getUserMedia(constraints)
+          );
         } catch (error) {
           logger.debug(
             "Preferred mic unavailable during recovery, falling back to default",
@@ -763,7 +766,7 @@ class AudioManager {
             "audio"
           );
           const fallback = await this.getAudioConstraints(true);
-          return navigator.mediaDevices.getUserMedia(fallback);
+          return processMicrophoneStream(await navigator.mediaDevices.getUserMedia(fallback));
         }
       },
       onRecovered: (replacement, previous) => this.replaceActiveMic(replacement, previous),
@@ -1209,17 +1212,12 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
   async getAudioConstraints(forceDefaultMic = false, refreshSystemDefault = false) {
     const settings = getSettings();
 
-    // Local Windows capture needs digital gain control for quiet USB mics.
-    // main.js disables WebRtcAllowInputVolumeAdjustment so this cannot adjust
-    // the system input volume (#476). Other platforms keep AGC disabled.
-    // Echo cancellation and noise suppression stay off to avoid distortion.
-    // Stereo recording required — mono WebM breaks silence detection on Linux/PipeWire (#472).
+    // Application gain is shared with the test and assistant; native AGC must
+    // stay off so two independent controllers cannot fight over the level.
     const captureOptions = {
       echoCancellation: false,
       noiseSuppression: false,
-      autoGainControl: Boolean(
-        window.electronAPI?.localOnly && window.electronAPI?.getPlatform?.() === "win32"
-      ),
+      autoGainControl: false,
       channelCount: 2,
     };
 
@@ -1433,14 +1431,14 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     const held = this.micStreamHold.acquireClone(key);
     if (held) {
       this._stampMicWarm();
-      return held;
+      return processMicrophoneStream(held);
     }
     const stream = await this.acquireHealthyMicStream(
       await navigator.mediaDevices.getUserMedia(constraints),
       constraints
     );
     this._stampMicWarm();
-    return this.micStreamHold.adoptAndClone(stream, key);
+    return processMicrophoneStream(this.micStreamHold.adoptAndClone(stream, key));
   }
 
   // TTL-gated warm-up used only by the streaming-connection warm-up. The

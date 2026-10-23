@@ -85,6 +85,8 @@ const EXPECTED_SHARED_FIELD_DIRECTIONS = {
 };
 
 const EXPECTED_NATIVE_FIELD_DIRECTIONS = {
+  // Numeric gain increases left-to-right, matching its percentage scale.
+  "src/components/ui/MicrophoneSettings.tsx": ["ltr"],
   "src/components/ApiKeysSection.tsx": ["inherit"],
   "src/components/CommandSearch.tsx": ["auto"],
   // The start-at-login checkbox has no text content to reorient.

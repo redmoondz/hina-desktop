@@ -1,3 +1,6 @@
+import { useSettingsStore } from "../../stores/settingsStore";
+import { useMicrophoneTest } from "../../hooks/useMicrophoneTest";
+import { Toggle } from "./toggle";
 import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { SettingsRow } from "./SettingsSection";
@@ -36,6 +39,14 @@ export const MicrophoneSettings: React.FC<MicrophoneSettingsProps> = ({
   onMicWarmHoldSecondsChange,
 }) => {
   const { t } = useTranslation();
+  const autoBoost = useSettingsStore((s) => s.micAutoBoost);
+  const gainPercent = useSettingsStore((s) => s.micGainPercent);
+  const setAutoBoost = useSettingsStore((s) => s.setMicAutoBoost);
+  const setGainPercent = useSettingsStore((s) => s.setMicGainPercent);
+  const test = useMicrophoneTest(`${microphoneSelectionMode}:${selectedMicDeviceId}`);
+  const levelPercent = Math.round(
+    Math.max(0, Math.min(100, ((20 * Math.log10(Math.max(test.level.rms, 0.001)) + 60) / 60) * 100))
+  );
   const [devices, setDevices] = useState<AudioDevice[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -196,6 +207,98 @@ export const MicrophoneSettings: React.FC<MicrophoneSettingsProps> = ({
           </p>
         </div>
       )}
+
+      <div className="space-y-4 rounded-lg border border-border p-4">
+        <SettingsRow
+          label={t("microphoneSettings.processing.autoBoost")}
+          description={t("microphoneSettings.processing.autoBoostDescription")}
+        >
+          <Toggle
+            checked={autoBoost}
+            onChange={setAutoBoost}
+            ariaLabel={t("microphoneSettings.processing.autoBoost")}
+          />
+        </SettingsRow>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <label htmlFor="microphone-gain" className="text-sm font-medium">
+              {t("microphoneSettings.processing.manualGain")}
+            </label>
+            <output
+              htmlFor="microphone-gain"
+              className="text-sm tabular-nums text-muted-foreground"
+            >
+              {autoBoost ? t("microphoneSettings.processing.automatic") : `${gainPercent}%`}
+            </output>
+          </div>
+          <input
+            dir="ltr"
+            id="microphone-gain"
+            type="range"
+            min={0}
+            max={400}
+            step={5}
+            value={gainPercent}
+            onChange={(event) => setGainPercent(Number(event.target.value))}
+            disabled={autoBoost}
+            className="w-full accent-primary disabled:opacity-40"
+          />
+          <div className="relative h-4 text-xs text-muted-foreground" dir="ltr" aria-hidden="true">
+            <span className="absolute left-0">0%</span>
+            <span className="absolute left-1/4 -translate-x-1/2">100%</span>
+            <span className="absolute right-0">400%</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("microphoneSettings.processing.scope")}
+          </p>
+        </div>
+        <div className="space-y-3 border-t border-border pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-sm font-medium">{t("microphoneSettings.processing.test")}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={test.status === "opening" || test.status === "stopping"}
+              onClick={() => (test.status === "recording" ? test.stop() : void test.start())}
+            >
+              {t(
+                `microphoneSettings.processing.${test.status === "recording" ? "stop" : test.status === "opening" ? "opening" : "start"}`
+              )}
+            </Button>
+          </div>
+          <div
+            role="meter"
+            aria-label={t("microphoneSettings.processing.level")}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={test.status === "recording" ? levelPercent : 0}
+            className="h-3 overflow-hidden rounded-full bg-muted"
+          >
+            <div
+              className={`h-full transition-[width] duration-75 ${test.level.peak >= 0.95 ? "bg-destructive" : test.level.peak >= 0.8 ? "bg-warning" : "bg-success"}`}
+              style={{ width: `${test.status === "recording" ? levelPercent : 0}%` }}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground" aria-live="polite">
+            {t(
+              `microphoneSettings.processing.${test.status === "recording" ? (test.level.peak >= 0.95 ? "tooLoud" : "recording") : "testHelp"}`
+            )}
+          </p>
+          {test.failed && (
+            <p role="alert" className="text-sm text-destructive">
+              {t("microphoneSettings.processing.error")}
+            </p>
+          )}
+          {test.playbackUrl && (
+            <audio
+              className="w-full [color-scheme:light] dark:[color-scheme:dark]"
+              controls
+              src={test.playbackUrl}
+              aria-label={t("microphoneSettings.processing.playback")}
+            />
+          )}
+        </div>
+      </div>
 
       <SettingsRow
         label={t("microphoneSettings.warmHold.label")}
