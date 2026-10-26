@@ -45,6 +45,8 @@ These screenshots do not establish native Windows hotkey or microphone E2E.
 - Existing configured agent deadlines still apply. A missing final response can
   leave an external action running; inspect OpenClaw before repeating it.
 - Connector restart marks unfinished turns unknown and never replays actions.
-- No services or installed Windows application were restarted or replaced.
+- Initial feature verification left services untouched. The subsequent authorized
+  Connector deployment is recorded in `release-notes-0.5.0.md`. The installed
+  Windows application is updated by the user through the tray.
 - Native Windows overlay, focus, microphone and hotkey E2E remain to be checked
   in an interactive logged-in Windows session.
