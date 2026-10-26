@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-26
+
+- Open the assistant conversation as soon as a voice request is submitted.
+- Show available public OpenClaw progress and keep voice and typed follow-ups in one session.
+- Minimize to the compact overlay and restore the same conversation with a click.
+- Close conversations without cancelling background tasks; inspect their answers in History.
+- Start a fresh conversation after closing, with running sessions preserved in History.
+- Stop microphone capture when switching to text input without interrupting the agent.
+- Require the matching Connector session API; preserve legacy command endpoints.
+
 ## [0.4.0] - 2026-10-23
 
 - Add text input from the agent recording overlay, with silent text replies.
