@@ -21,6 +21,7 @@ import { usePolicyStore } from "./stores/policyStore";
 import { useTranscriptionContextAllowed } from "./hooks/usePolicy";
 import { useTrayQuickActions } from "./hooks/useTrayQuickActions";
 import { VoicePill } from "./components/dictation/VoicePill";
+import { HinaSessionPanel } from "./components/dictation/HinaSessionPanel";
 import { AssistantPanel } from "./components/dictation/AssistantPanel";
 import { LiveTranscriptPanel } from "./components/dictation/LiveTranscriptPanel";
 import { VoiceModePanelCore } from "./components/dictation/VoiceModePanelCore";
@@ -325,7 +326,8 @@ export default function App() {
     toastCount,
     isCommandMenuOpen,
     isCompactPill: windowFitsCompactPill,
-    isDictationActive: isRecording || isVisuallyProcessing,
+    isDictationActive:
+      isRecording || isVisuallyProcessing || Boolean(assistant.localSessions.activeId),
     assistantOpen: assistant.open,
     assistantMounted: assistant.mounted,
     assistantOpenRef,
@@ -420,6 +422,7 @@ export default function App() {
       toastCount === 0 &&
       !dictationErrorPillHandoffActive &&
       !assistant.mounted &&
+      !assistant.localSessions.activeId &&
       !liveTranscript.mounted
     ) {
       // Delay briefly so processing can start after recording stops without a flash
@@ -439,6 +442,7 @@ export default function App() {
     toastCount,
     dictationErrorPillHandoffActive,
     assistant.mounted,
+    assistant.localSessions.activeId,
     liveTranscript.mounted,
   ]);
 
@@ -552,6 +556,18 @@ export default function App() {
       setIsCommandMenuOpen(false);
       liveTranscript.close({ suppress: true });
       void openAssistantTextInput(cancelRecording, assistant.openTextInput);
+      return;
+    }
+    if (
+      assistant.localSessions.enabled &&
+      assistant.localSessions.activeId &&
+      (isAssistantVoice || (!isRecording && !isPreparing && !isProcessing)) &&
+      !assistant.open &&
+      !hasDragged
+    ) {
+      setIsCommandMenuOpen(false);
+      liveTranscript.close({ suppress: true });
+      void assistant.openTextInput();
       return;
     }
     if (canReopenLiveTranscript) {
@@ -816,28 +832,44 @@ export default function App() {
         onPreferredHeightChange={liveTranscript.requestHeight}
         onClosingFadeComplete={assistant.completeContentFade}
       >
-        {activeVoicePanelMode === "assistant" && assistant.mounted && (
-          <AssistantPanel
-            pendingCommand={assistant.pendingCommand}
-            textInputRequest={assistant.textInputRequest}
-            onCommandConsumed={assistant.handleCommandConsumed}
-            onCommandDiscarded={assistant.handleCommandDiscarded}
-            onCommandSettled={assistant.handleCommandSettled}
-            initialConversationId={assistant.conversationId}
-            onConversationIdChange={assistant.setConversationId}
-            voiceState={assistantVoiceState}
-            thinking={assistant.thinking && assistant.open}
-            open={assistant.open}
-            footerPhase={assistant.footerPhase}
-            horizontalDirection={voiceHorizontalDirection}
-            onClose={assistant.handleClose}
-            onBusyChange={assistant.setBusy}
-            onResponseReadyChange={assistant.setResponseReady}
-            onResponseContent={assistant.handleResponseContent}
-            onConversationReset={assistant.handleConversationReset}
-            onSelectionContextChange={assistant.handleSelectionContextChange}
-          />
-        )}
+        {activeVoicePanelMode === "assistant" &&
+          assistant.mounted &&
+          assistant.localSessions.enabled && (
+            <HinaSessionPanel
+              sessions={assistant.localSessions}
+              open={assistant.open}
+              textInputRequest={assistant.textInputRequest}
+              onMinimize={assistant.minimizeLocal}
+              onClose={assistant.handleClose}
+              onTextInputIntent={() => {
+                if (isAssistantVoice && (isRecording || isPreparing)) void cancelRecording();
+              }}
+            />
+          )}
+        {activeVoicePanelMode === "assistant" &&
+          assistant.mounted &&
+          !assistant.localSessions.enabled && (
+            <AssistantPanel
+              pendingCommand={assistant.pendingCommand}
+              textInputRequest={assistant.textInputRequest}
+              onCommandConsumed={assistant.handleCommandConsumed}
+              onCommandDiscarded={assistant.handleCommandDiscarded}
+              onCommandSettled={assistant.handleCommandSettled}
+              initialConversationId={assistant.conversationId}
+              onConversationIdChange={assistant.setConversationId}
+              voiceState={assistantVoiceState}
+              thinking={assistant.thinking && assistant.open}
+              open={assistant.open}
+              footerPhase={assistant.footerPhase}
+              horizontalDirection={voiceHorizontalDirection}
+              onClose={assistant.handleClose}
+              onBusyChange={assistant.setBusy}
+              onResponseReadyChange={assistant.setResponseReady}
+              onResponseContent={assistant.handleResponseContent}
+              onConversationReset={assistant.handleConversationReset}
+              onSelectionContextChange={assistant.handleSelectionContextChange}
+            />
+          )}
 
         {activeVoicePanelMode !== "assistant" && (
           <LiveTranscriptPanel

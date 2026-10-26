@@ -48,3 +48,21 @@ The original application logo is stored in `src/assets/logo.png`. Regenerate its
 Based on MIT-licensed OpenWhispr. Original copyright and licensing notices remain in `LICENSE` and third-party materials.
 
 For an existing OpenClaw installation in WSL/Linux, `bash scripts/hina-connector-service.sh --print-unit` previews a standalone user service. After review, running the script without arguments installs and enables `hina-connector.service` for the existing sibling Connector build. It creates a private `~/.config/hina-desktop/connector.env` with a new bearer token only when absent; reruns preserve that file and never print its token. The service clears inherited agent-execution flags, uses the installed OpenClaw executable, and checks local health without an agent turn. OpenClaw configuration and provider credentials remain managed by OpenClaw.
+
+## Assistant conversations
+
+Voice requests open the current conversation while OpenClaw works. Follow-up
+voice and text messages share that conversation. During execution, the composer
+queues new messages rather than interrupting the current turn.
+
+- **Minimize** (or Escape): return to the compact overlay; click it to restore
+  the same chat. The voice hotkey followed by a click opens its text composer.
+- **Close conversation**: keep work running in history and start a new chat on
+  the next invocation.
+- **History**: reopen a running or completed conversation and inspect its reply.
+- **New conversation**: leave the previous task running and open an empty chat.
+
+This requires the matching Connector session API; update both components.
+Progress uses actual OpenClaw history updates where available. Replies remain
+available after the window closes; closing the Connector itself is a separate
+runtime interruption. See `../ASSISTANT-SESSIONS.md` for acceptance cases.

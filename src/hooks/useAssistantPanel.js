@@ -1,3 +1,4 @@
+import { useHinaSessions } from "./useHinaSessions";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   getAssistantFooterTransitionTimeline,
@@ -25,6 +26,7 @@ export function useAssistantPanel({
   recordingControlsRef,
   onPanelOpened,
 }) {
+  const localSessions = useHinaSessions(Boolean(window.electronAPI?.localOnly));
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [closing, setClosing] = useState(false);
@@ -126,6 +128,10 @@ export function useAssistantPanel({
   }, [openPanel]);
 
   const beginThinking = useCallback(() => {
+    if (localSessions.enabled) {
+      void openPanel();
+      return;
+    }
     clearTimeout(closeTimerRef.current);
     closingRef.current = false;
     contentFadeCompletedRef.current = false;
@@ -137,10 +143,15 @@ export function useAssistantPanel({
     setResponseReady(transition.responseReady);
     setThinking(transition.thinking);
     setMounted(transition.panelMounted);
-  }, []);
+  }, [localSessions.enabled, openPanel]);
 
   const handleCommand = useCallback(
     (command) => {
+      if (localSessions.enabled) {
+        void openPanel();
+        void localSessions.send(command.text, { ...command, spoken: true });
+        return;
+      }
       commandIdRef.current += 1;
       // A follow-up spoken into an open panel stays panel-first: its answer is
       // already streaming into a visible conversation, and delivering it to
@@ -155,7 +166,7 @@ export function useAssistantPanel({
         delivery,
       });
     },
-    [beginThinking]
+    [beginThinking, localSessions, openPanel]
   );
 
   const handleResponseContent = useCallback(() => {
@@ -208,7 +219,9 @@ export function useAssistantPanel({
   const getSelectionContext = useCallback(() => selectionContextRef.current, []);
 
   const ownsNativeWindow = open || (errorDownplayActive && dictationErrorActionCount > 0);
-  const assistantPanelBusy = thinking || busy || pendingCommand !== null;
+  const assistantPanelBusy = localSessions.enabled
+    ? false
+    : thinking || busy || pendingCommand !== null;
 
   useEffect(() => {
     window.electronAPI?.setAssistantPanelOpen?.(ownsNativeWindow);
@@ -275,9 +288,33 @@ export function useAssistantPanel({
     [recordingControlsRef, completeContentFade]
   );
 
+  const minimizeLocal = useCallback(() => {
+    // Hide presentation only. The Connector owns execution independently.
+    openGenerationRef.current += 1;
+    cancelAnimationFrame(openFrameRef.current);
+    clearTimeout(closeTimerRef.current);
+    openRef.current = false;
+    closingRef.current = false;
+    setOpen(false);
+    setMounted(false);
+    setClosing(false);
+    setThinking(false);
+    void window.electronAPI?.setAssistantPanelOpen?.(false);
+    void window.electronAPI?.setAssistantPanelBusy?.(false);
+  }, []);
   const handleClose = useCallback(() => {
+    if (localSessions.enabled) {
+      const recording = recordingControlsRef.current;
+      if (recording?.isAssistantVoice) {
+        if (recording.isRecording || recording.isPreparing) recording.cancelRecording();
+        else if (recording.isProcessing) recording.cancelProcessing();
+      }
+      localSessions.close();
+      minimizeLocal();
+      return;
+    }
     beginClose(false);
-  }, [beginClose]);
+  }, [beginClose, localSessions, minimizeLocal, recordingControlsRef]);
 
   useEffect(() => {
     if (dictationErrorActionCount > 0) {
@@ -322,7 +359,9 @@ export function useAssistantPanel({
     mounted,
     closing,
     thinking,
-    busy,
+    busy: localSessions.enabled ? localSessions.busy : busy,
+    localSessions,
+    minimizeLocal,
     footerPhase,
     pendingCommand,
     conversationId,

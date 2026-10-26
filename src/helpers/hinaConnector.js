@@ -51,6 +51,31 @@ async function hinaRequest(args, fetcher = localFetch) {
             error: `Check the Connector bearer token (HTTP ${auth.status}). Use CONNECTOR_API_TOKEN from the running Connector, not an OpenClaw gateway token.`,
           };
     }
+    if (args.sessionAction) {
+      const action = args.sessionAction;
+      if (
+        !["list", "send", "close"].includes(action) ||
+        (action !== "list" && !/^[a-zA-Z0-9-]{1,80}$/.test(args.sessionId || ""))
+      )
+        return { ok: false, error: "Invalid session action" };
+      phase = "command";
+      const endpoint =
+        action === "list"
+          ? "/sessions"
+          : `/sessions/${args.sessionId}/${action === "send" ? "messages" : "close"}`;
+      const response = await fetcher(`${base}${endpoint}`, {
+        ...options,
+        signal: AbortSignal.timeout(15000),
+        timeoutSeconds: 15,
+        method: action === "list" ? "GET" : "POST",
+        ...(action === "send"
+          ? { body: JSON.stringify({ text: args.text, requestId: args.requestId, timeoutSeconds }) }
+          : {}),
+      });
+      if (!response.ok)
+        return { ok: false, error: `Hina session request failed (HTTP ${response.status})` };
+      return await response.json();
+    }
     if (
       typeof args.text !== "string" ||
       !args.text.trim() ||

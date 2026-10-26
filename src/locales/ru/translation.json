@@ -5206,5 +5206,24 @@
     "timeoutInvalid": "Enter a whole number from 1 to 3600 seconds.",
     "waitingForReply": "Waiting for Hina",
     "longRequestHint": "The request is still pending. Agent tools can take several minutes; waiting continues until the configured limit."
+  },
+  "hinaSessions": {
+    "title": "Hina Assistant",
+    "history": "History",
+    "new": "New conversation",
+    "minimize": "Minimize",
+    "close": "Close conversation",
+    "emptyHistory": "No conversations yet.",
+    "empty": "Ask by voice or type a message.",
+    "queued": "Queued",
+    "running": "Running",
+    "completed": "Completed",
+    "failed": "Reply unavailable",
+    "unknown": "Execution status unknown",
+    "checkBeforeRetry": "The task may still be running in OpenClaw. Check its session before repeating the request.",
+    "progressUnavailable": "Detailed progress is unavailable. Waiting for OpenClaw updates.",
+    "backgroundHint": "Minimize to return here. Close to start a new chat next time. Tasks continue in the background.",
+    "connectionError": "Cannot reach Hina Connector.",
+    "configureConnector": "Configure and test Hina Connector in Settings before sending a command."
   }
 }

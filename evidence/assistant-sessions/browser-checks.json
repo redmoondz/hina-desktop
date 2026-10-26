@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "screenshots": 4,
+  "checks": [
+    "desktop/mobile light/dark",
+    "no horizontal overflow",
+    "minimize/restore same conversation",
+    "history and previous answer",
+    "close then fresh session",
+    "no browser console errors"
+  ]
+}
