@@ -68,7 +68,7 @@ async function setupAssistantPanel(
         }
       `,
       "/chat/useChatMessageSender": `
-        export function useChatMessageSender() { return () => {}; }
+        export function useChatMessageSender() { return (...args) => globalThis.__assistantPanelSend?.(...args); }
       `,
       useVoiceDraft: `
         export function useVoiceDraft() {
@@ -1145,4 +1145,63 @@ test("voice help sources stay with the answer on screen while a follow-up runs",
   assert.match(container.textContent, /Open Settings → App → Hotkeys/);
   assert.ok(link("/help/dictation/hotkeys"), "the answer on screen keeps its own source");
   assert.equal(link("/guides/local-models"), null, "the pending answer's source waits for it");
+});
+
+test("a spoken answer can be silenced without removing the answer, and stale completion cannot stop a newer answer", async (t) => {
+  let root = null;
+  t.after(async () => {
+    if (root) await React.act(async () => root.unmount());
+    delete globalThis.__assistantPanelSend;
+  });
+  const { AssistantPanel, props } = await setupAssistantPanel(t, [
+    { id: "answer", role: "assistant", content: "The answer stays visible", isStreaming: false },
+  ]);
+  const container = installInteractiveDom(t);
+  const { createRoot } = require("react-dom/client");
+  const completions = [];
+  const spoken = [];
+  let stops = 0;
+  globalThis.window.electronAPI.localOnly = true;
+  globalThis.window.electronAPI.hinaSpeechSpeak = () =>
+    new Promise((resolve) => spoken.push(resolve));
+  globalThis.window.electronAPI.hinaSpeechStop = async () => {
+    stops++;
+    return { ok: true };
+  };
+  globalThis.__assistantPanelSend = async (_text, options) => {
+    completions.push(options.onComplete);
+    return true;
+  };
+  root = createRoot(container);
+  const render = (id) =>
+    React.createElement(AssistantPanel, {
+      ...props,
+      onCommandSettled: noop,
+      pendingCommand: {
+        id,
+        text: "Question",
+        attachment: null,
+        selectedContext: null,
+        delivery: null,
+      },
+    });
+  const stopButton = () =>
+    findElement(
+      container,
+      (el) => el.tagName === "BUTTON" && el.textContent.includes("Stop speaking")
+    );
+  await React.act(async () => root.render(render(1)));
+  assert.equal(stopButton(), null);
+  await React.act(async () => completions[0]({ content: "First reply" }));
+  assert.ok(stopButton());
+  await React.act(async () => stopButton().dispatchEvent({ type: "click", bubbles: true }));
+  assert.equal(stops, 1);
+  assert.equal(stopButton(), null);
+  assert.match(container.textContent, /The answer stays visible/);
+  await React.act(async () => root.render(render(2)));
+  await React.act(async () => completions[1]({ content: "Second reply" }));
+  await React.act(async () => spoken[0]({ ok: false, error: "stopped" }));
+  assert.ok(stopButton(), "old completion must not hide the active stop button");
+  await React.act(async () => spoken[1]({ ok: true }));
+  assert.equal(stopButton(), null);
 });

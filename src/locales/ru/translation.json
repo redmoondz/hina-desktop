@@ -5196,6 +5196,7 @@
     "speechStop": "Stop speech",
     "speechSample": "Hello, this is Hina. Voice replies are ready.",
     "speechTestOk": "Voice test completed.",
+    "stopSpeech": "Остановить озвучку",
     "speechFailed": "Could not speak the reply",
     "interfaceLanguage": "Interface language",
     "importConnected": "Settings imported. Connected to Hina.",

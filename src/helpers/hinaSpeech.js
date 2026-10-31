@@ -36,8 +36,12 @@ try {
 
 function createHinaSpeech({ platform = process.platform, execFile = systemExecFile } = {}) {
   let active = null;
+  const stopped = new WeakSet();
   const stop = () => {
-    active?.kill();
+    if (active) {
+      stopped.add(active);
+      active.kill();
+    }
     active = null;
     return { ok: true };
   };
@@ -64,9 +68,11 @@ function createHinaSpeech({ platform = process.platform, execFile = systemExecFi
           if (active === child) active = null;
           try {
             resolve(
-              error
-                ? { ok: false, error: "Windows speech process failed or was stopped." }
-                : JSON.parse(stdout.replace(/^\uFEFF/, ""))
+              stopped.has(child)
+                ? { ok: true, stopped: true }
+                : error
+                  ? { ok: false, error: "Windows speech process failed or was stopped." }
+                  : JSON.parse(stdout.replace(/^\uFEFF/, ""))
             );
           } catch {
             resolve({ ok: false, error: "Invalid response from Windows speech." });

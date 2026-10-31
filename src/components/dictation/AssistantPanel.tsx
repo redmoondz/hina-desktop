@@ -116,6 +116,51 @@ export function AssistantPanel({
 }: AssistantPanelProps) {
   const { t, i18n } = useTranslation();
   const { toast } = useToast();
+  const [speaking, setSpeaking] = useState(false);
+  const speechRequestRef = useRef(0);
+  const stopSpeech = useCallback(() => {
+    speechRequestRef.current += 1;
+    setSpeaking(false);
+    void window.electronAPI
+      .hinaSpeechStop()
+      .catch(() => toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" }));
+  }, [t, toast]);
+  useEffect(
+    () => () => {
+      speechRequestRef.current += 1;
+      void window.electronAPI.hinaSpeechStop?.().catch(() => {});
+    },
+    []
+  );
+  const speakResponse = useCallback(
+    (content: string) => {
+      const request = ++speechRequestRef.current;
+      setSpeaking(true);
+      void window.electronAPI
+        .hinaSpeechSpeak({
+          text: content,
+          language: localStorage.getItem("hinaSpeechLanguage") || "ru-RU",
+          voice: localStorage.getItem("hinaSpeechVoice") || undefined,
+        })
+        .then((result) => {
+          if (request !== speechRequestRef.current) return;
+          if (!result.ok)
+            toast({
+              title: t("hinaSettings.speechFailed"),
+              description: result.error,
+              variant: "destructive",
+            });
+        })
+        .catch(() => {
+          if (request === speechRequestRef.current)
+            toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" });
+        })
+        .finally(() => {
+          if (request === speechRequestRef.current) setSpeaking(false);
+        });
+    },
+    [t, toast]
+  );
   const { handleMouseDown, handleMouseUp } = useWindowDrag();
   const voiceAgentKey = useSettingsStore((state) => state.voiceAgentKey);
   const readableVoiceHotkey = formatHotkeyListLabel(voiceAgentKey);
@@ -234,25 +279,7 @@ export function AssistantPanel({
         onResponseContent,
         speak:
           window.electronAPI.localOnly && localStorage.getItem("hinaSpeechEnabled") !== "false"
-            ? (content) => {
-                void window.electronAPI
-                  .hinaSpeechSpeak({
-                    text: content,
-                    language: localStorage.getItem("hinaSpeechLanguage") || "ru-RU",
-                    voice: localStorage.getItem("hinaSpeechVoice") || undefined,
-                  })
-                  .then((result) => {
-                    if (!result.ok)
-                      toast({
-                        title: t("hinaSettings.speechFailed"),
-                        description: result.error,
-                        variant: "destructive",
-                      });
-                  })
-                  .catch(() =>
-                    toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" })
-                  );
-              }
+            ? speakResponse
             : undefined,
         deliver: deliverAssistantResponse,
         confirmCopied: (content) => confirmCopied(content, AUTO_COPY_FEEDBACK_MS),
@@ -292,6 +319,7 @@ export function AssistantPanel({
       })
       .finally(() => onCommandSettled(commandId, { showPanel: !wasDelivered() }));
   }, [
+    speakResponse,
     historyReady,
     submissionInFlight,
     pendingCommand,
@@ -490,6 +518,17 @@ export function AssistantPanel({
         onMouseUp={handleMouseUp}
       >
         <BrandMarkIcon size={20} className="shrink-0 text-muted-foreground" />
+        {speaking && (
+          <button
+            type="button"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-foreground hover:bg-foreground/10"
+            onMouseDown={(event) => event.stopPropagation()}
+            onClick={stopSpeech}
+          >
+            <X size={14} aria-hidden="true" />
+            {t("hinaSettings.stopSpeech")}
+          </button>
+        )}
         {messages.length > 0 && (
           <button
             type="button"

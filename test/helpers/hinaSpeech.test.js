@@ -50,3 +50,35 @@ test("speech reports unsupported platforms and process failures", async () => {
   });
   assert.equal((await failed.list()).ok, false);
 });
+
+test("stopping speech kills only the active process and reports cancellation as success", async () => {
+  const { createHinaSpeech } = require("../../src/helpers/hinaSpeech");
+  const children = [];
+  const speech = createHinaSpeech({
+    platform: "win32",
+    execFile: (_file, _args, _options, callback) => {
+      const child = {
+        kills: 0,
+        kill() {
+          this.kills++;
+          queueMicrotask(() => callback(new Error("killed"), ""));
+        },
+        stdin: { on() {}, end() {} },
+        finish() {
+          callback(null, '{"ok":true}');
+        },
+      };
+      children.push(child);
+      return child;
+    },
+  });
+  const first = speech.speak({ text: "First", language: "ru-RU" });
+  const second = speech.speak({ text: "Second", language: "ru-RU" });
+  assert.deepEqual(await first, { ok: true, stopped: true });
+  assert.equal(children[0].kills, 1);
+  speech.stop();
+  assert.equal(children[1].kills, 1);
+  assert.deepEqual(await second, { ok: true, stopped: true });
+  speech.stop();
+  assert.equal(children[1].kills, 1);
+});
