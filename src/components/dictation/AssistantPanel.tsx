@@ -40,6 +40,7 @@ import {
 } from "../../utils/assistantSelection";
 import { AssistantEmptyState } from "./AssistantEmptyState";
 import { useToast } from "../ui/useToast";
+import { speakHinaReply, stopHinaReply } from "../../helpers/hinaSpeechPlayback";
 import {
   resolveAssistantPanelBusy,
   restoreAssistantConversation,
@@ -121,14 +122,14 @@ export function AssistantPanel({
   const stopSpeech = useCallback(() => {
     speechRequestRef.current += 1;
     setSpeaking(false);
-    void window.electronAPI
-      .hinaSpeechStop()
-      .catch(() => toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" }));
+    void stopHinaReply().catch(() =>
+      toast({ title: t("hinaSettings.speechFailed"), variant: "destructive" })
+    );
   }, [t, toast]);
   useEffect(
     () => () => {
       speechRequestRef.current += 1;
-      void window.electronAPI.hinaSpeechStop?.().catch(() => {});
+      void stopHinaReply().catch(() => {});
     },
     []
   );
@@ -136,12 +137,7 @@ export function AssistantPanel({
     (content: string) => {
       const request = ++speechRequestRef.current;
       setSpeaking(true);
-      void window.electronAPI
-        .hinaSpeechSpeak({
-          text: content,
-          language: localStorage.getItem("hinaSpeechLanguage") || "ru-RU",
-          voice: localStorage.getItem("hinaSpeechVoice") || undefined,
-        })
+      void speakHinaReply(content)
         .then((result) => {
           if (request !== speechRequestRef.current) return;
           if (!result.ok)

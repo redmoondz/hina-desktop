@@ -182,3 +182,31 @@ test("changing an imported Connector destination requires authenticating it agai
   );
   assert.equal(storage.get("hinaConnectorEnabled"), "false");
 });
+
+test("XTTS preferences are portable but sample and Python machine paths are excluded", async () => {
+  const { exportSettings, parseSettings } = await load();
+  const speech = {
+    engine: "xtts",
+    language: "ru",
+    xttsVoice: "Voice",
+    speed: 1.2,
+    temperature: 0.5,
+    volume: 0.7,
+    device: "cpu",
+  };
+  assert.deepEqual(exportSettings({}, {}, speech).speech, speech);
+  for (const invalid of [
+    { ...speech, speed: 3 },
+    { ...speech, engine: "cloud" },
+    { ...speech, reference: "C:/voice.wav" },
+    { ...speech, pythonPath: "C:/python.exe" },
+  ]) {
+    assert.throws(
+      () =>
+        parseSettings(
+          JSON.stringify({ format: "hina-desktop", version: 1, settings: {}, speech: invalid })
+        ),
+      /Invalid speech/
+    );
+  }
+});

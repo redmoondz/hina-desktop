@@ -149,8 +149,37 @@ export function parseSettings(text) {
     !speech ||
     typeof speech !== "object" ||
     Array.isArray(speech) ||
-    Object.keys(speech).some((key) => !["enabled", "language", "voice"].includes(key)) ||
+    Object.keys(speech).some(
+      (key) =>
+        ![
+          "enabled",
+          "language",
+          "voice",
+          "engine",
+          "xttsVoice",
+          "device",
+          "speed",
+          "temperature",
+          "volume",
+        ].includes(key)
+    ) ||
     (speech.enabled !== undefined && typeof speech.enabled !== "boolean") ||
+    (speech.engine !== undefined && !["windows", "xtts"].includes(speech.engine)) ||
+    (speech.device !== undefined && !["cpu", "cuda"].includes(speech.device)) ||
+    (speech.xttsVoice !== undefined &&
+      (typeof speech.xttsVoice !== "string" || speech.xttsVoice.length > 512)) ||
+    [
+      ["speed", 0.5, 2],
+      ["temperature", 0.1, 1],
+      ["volume", 0, 1],
+    ].some(
+      ([key, low, high]) =>
+        speech[key] !== undefined &&
+        (typeof speech[key] !== "number" ||
+          !Number.isFinite(speech[key]) ||
+          speech[key] < low ||
+          speech[key] > high)
+    ) ||
     (speech.language !== undefined &&
       (typeof speech.language !== "string" ||
         !/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(speech.language))) ||
@@ -228,6 +257,7 @@ export async function applySettings(file, store, storage, api) {
   if (shouldConnect) await saveConnection(connection, store, storage, api);
   if (parsed.connector.timeoutSeconds !== undefined)
     storage.setItem("hinaConnectorTimeoutSeconds", String(parsed.connector.timeoutSeconds));
+  if (parsed.speech.xttsVoice !== undefined) storage.removeItem?.("hinaSpeechReference");
   for (const [key, value] of Object.entries(parsed.speech))
     storage.setItem(`hinaSpeech${key[0].toUpperCase()}${key.slice(1)}`, String(value));
   return { connected: shouldConnect };

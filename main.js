@@ -30,10 +30,49 @@ app.setName("Hina Desktop");
 const { hinaRequest } = require("./src/helpers/hinaConnector");
 ipcMain.handle("hina-connector-request", (_event, args) => hinaRequest(args));
 const hinaSpeech = require("./src/helpers/hinaSpeech").createHinaSpeech();
+
+ipcMain.handle("hina-xtts-status", () => hinaXtts.status());
+ipcMain.handle("hina-xtts-install", (_event, args) => hinaXtts.install(args));
+ipcMain.handle("hina-xtts-voices", (_event, device) => hinaXtts.list(device));
+ipcMain.handle("hina-xtts-select-file", async (_event, kind) => {
+  if (!["reference", "python"].includes(kind)) return { canceled: true };
+  const result = await dialog.showOpenDialog({
+    title:
+      kind === "reference"
+        ? "Select a voice sample (WAV, 3–30 seconds)"
+        : "Select Python 3.10–3.12",
+    properties: ["openFile"],
+    ...(kind === "reference" ? { filters: [{ name: "WAV audio", extensions: ["wav"] }] } : {}),
+  });
+  return { canceled: result.canceled, path: result.filePaths[0] };
+});
 ipcMain.handle("hina-speech-voices", () => hinaSpeech.list());
-ipcMain.handle("hina-speech-speak", (_event, args) => hinaSpeech.speak(args));
-ipcMain.handle("hina-speech-stop", () => hinaSpeech.stop());
-app.on("before-quit", () => hinaSpeech.stop());
+function stopOtherSpeechPlayers(sender) {
+  for (const window of BrowserWindow.getAllWindows()) {
+    if (!window.isDestroyed() && window.webContents.id !== sender?.id)
+      window.webContents.send("hina-speech-playback-stop");
+  }
+}
+ipcMain.handle("hina-speech-speak", (event, args) => {
+  stopOtherSpeechPlayers(event.sender);
+  if (args?.engine === "xtts") {
+    hinaSpeech.stop();
+    return hinaXtts.speak(args);
+  }
+  if (args?.engine && args.engine !== "windows")
+    return { ok: false, error: "Unknown speech engine." };
+  hinaXtts.stop();
+  return hinaSpeech.speak(args);
+});
+ipcMain.handle("hina-speech-stop", (event) => {
+  stopOtherSpeechPlayers(event.sender);
+  hinaXtts.stop();
+  return hinaSpeech.stop();
+});
+app.on("before-quit", () => {
+  hinaXtts.dispose();
+  hinaSpeech.stop();
+});
 const tls = require("tls");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
@@ -95,6 +134,13 @@ function configureChannelUserDataPath() {
 }
 
 configureChannelUserDataPath();
+
+const hinaXtts = require("./src/helpers/hinaXtts").createHinaXtts({
+  root: path.join(app.getPath("userData"), "xtts-v2"),
+  scripts: app.isPackaged
+    ? path.join(process.resourcesPath, "xtts")
+    : path.join(__dirname, "resources", "xtts"),
+});
 
 // Load userData .env (contains DICTATION_KEY, API keys, etc.) early — before
 // hotkey registration, which needs DICTATION_KEY before the renderer loads.

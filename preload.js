@@ -65,6 +65,15 @@ const registerListener = (channel, handlerFactory) => {
 contextBridge.exposeInMainWorld("electronAPI", {
   localOnly: true,
   hinaConnectorRequest: (args) => ipcRenderer.invoke("hina-connector-request", args),
+  onHinaSpeechPlaybackStop: (callback) => {
+    const listener = () => callback();
+    ipcRenderer.on("hina-speech-playback-stop", listener);
+    return () => ipcRenderer.removeListener("hina-speech-playback-stop", listener);
+  },
+  hinaXttsStatus: () => ipcRenderer.invoke("hina-xtts-status"),
+  hinaXttsInstall: (args) => ipcRenderer.invoke("hina-xtts-install", args),
+  hinaXttsVoices: (device) => ipcRenderer.invoke("hina-xtts-voices", device),
+  hinaXttsSelectFile: (kind) => ipcRenderer.invoke("hina-xtts-select-file", kind),
   hinaSpeechVoices: () => ipcRenderer.invoke("hina-speech-voices"),
   hinaSpeechSpeak: (args) => ipcRenderer.invoke("hina-speech-speak", args),
   hinaSpeechStop: () => ipcRenderer.invoke("hina-speech-stop"),

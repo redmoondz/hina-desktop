@@ -95,6 +95,8 @@ const EXPECTED_NATIVE_FIELD_DIRECTIONS = {
   "src/components/settings/HinaConfigSettings.tsx": ["inherit"],
   // The speech-enabled checkbox contains no text to reorient.
   "src/components/settings/HinaSpeechSettings.tsx": ["inherit"],
+  // License checkbox has no text; numerical XTTS sliders increase left-to-right.
+  "src/components/settings/XttsSpeechSettings.tsx": ["inherit", "ltr"],
   // Folder names and search accept user text in any script.
   "src/components/MeetingNotificationFolderPicker.tsx": ["auto", "auto"],
   "src/components/MemberPickList.tsx": ["auto"],

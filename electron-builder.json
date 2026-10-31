@@ -93,6 +93,11 @@
   ],
   "extraResources": [
     {
+      "from": "resources/xtts",
+      "to": "xtts",
+      "filter": ["setup.py", "worker.py", "requirements.txt", "README.md"]
+    },
+    {
       "from": "src/assets",
       "to": "src/assets",
       "filter": ["**/*", "!fonts/yowza/**", "!openwhispr.icon/**"]

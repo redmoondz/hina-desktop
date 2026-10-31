@@ -1338,6 +1338,28 @@ declare global {
   interface Window {
     electronAPI: {
       readonly localOnly?: boolean;
+      onHinaSpeechPlaybackStop?: (callback: () => void) => () => void;
+      hinaXttsStatus: () => Promise<{
+        ok: boolean;
+        installed: boolean;
+        installing: boolean;
+        error?: string;
+      }>;
+      hinaXttsInstall: (args: {
+        acceptLicense: boolean;
+        device: "cpu" | "cuda";
+        pythonPath?: string;
+      }) => Promise<{ ok: boolean; installing?: boolean; error?: string }>;
+      hinaXttsVoices: (device: "cpu" | "cuda") => Promise<{
+        ok: boolean;
+        voices?: { id: string; name: string }[];
+        languages?: string[];
+        device?: string;
+        error?: string;
+      }>;
+      hinaXttsSelectFile: (
+        kind: "reference" | "python"
+      ) => Promise<{ canceled: boolean; path?: string }>;
       hinaSpeechVoices: () => Promise<{
         ok: boolean;
         voices?: { id: string; name: string; language: string }[];
@@ -1347,7 +1369,12 @@ declare global {
         text: string;
         language: string;
         voice?: string;
-      }) => Promise<{ ok: boolean; error?: string }>;
+        engine?: "windows" | "xtts";
+        reference?: string;
+        device?: "cpu" | "cuda";
+        speed?: number;
+        temperature?: number;
+      }) => Promise<{ ok: boolean; error?: string; audio?: string; stopped?: boolean }>;
       hinaSpeechStop: () => Promise<{ ok: boolean }>;
       hinaConnectorRequest: (args: {
         url: string;

@@ -49,6 +49,12 @@ Based on MIT-licensed OpenWhispr. Original copyright and licensing notices remai
 
 For an existing OpenClaw installation in WSL/Linux, `bash scripts/hina-connector-service.sh --print-unit` previews a standalone user service. After review, running the script without arguments installs and enables `hina-connector.service` for the existing sibling Connector build. It creates a private `~/.config/hina-desktop/connector.env` with a new bearer token only when absent; reruns preserve that file and never print its token. The service clears inherited agent-execution flags, uses the installed OpenClaw executable, and checks local health without an agent turn. OpenClaw configuration and provider credentials remain managed by OpenClaw.
 
+## Local assistant speech
+
+Speech settings now offer **XTTS v2** alongside Windows system voices. XTTS generates speech locally in Russian, English and other supported languages, with built-in voices or a WAV sample for voice conditioning. Speed, sampling temperature, volume, CPU/CUDA selection and preview/stop controls are available.
+
+Python 3.10–3.12 (64-bit), several GB of disk space and a one-time runtime/model download are required. Model weights use CPML and must be accepted separately before installation; they are not bundled with the MIT-licensed app. After setup, synthesis uses local files with downloads disabled. See [XTTS setup and limitations](resources/xtts/README.md).
+
 ## Assistant conversations
 
 Voice requests open the current conversation while OpenClaw works. Follow-up

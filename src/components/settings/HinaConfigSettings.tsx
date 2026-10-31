@@ -21,6 +21,12 @@ export default function HinaConfigSettings() {
         },
         {
           enabled: localStorage.getItem("hinaSpeechEnabled") !== "false",
+          engine: localStorage.getItem("hinaSpeechEngine") || "windows",
+          xttsVoice: localStorage.getItem("hinaSpeechXttsVoice") || "",
+          device: localStorage.getItem("hinaSpeechDevice") || "cpu",
+          speed: Number(localStorage.getItem("hinaSpeechSpeed") || 1),
+          temperature: Number(localStorage.getItem("hinaSpeechTemperature") || 0.65),
+          volume: Number(localStorage.getItem("hinaSpeechVolume") ?? 1),
           language: localStorage.getItem("hinaSpeechLanguage") || "ru-RU",
           voice: localStorage.getItem("hinaSpeechVoice") || "",
         }
