@@ -61,7 +61,7 @@ jobs:
       # 1.1.0 is the first release with --probe-editable; bump this default
       # whenever the binary's command-line protocol changes.
       - name: Create or update release
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: linux-text-monitor-v${{ inputs.version || '1.1.0' }}

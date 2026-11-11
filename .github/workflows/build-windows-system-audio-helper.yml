@@ -68,6 +68,7 @@ jobs:
           path: windows-system-audio-helper-win32-x64.zip
 
       - name: Create or update release
+        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: windows-system-audio-helper-v${{ inputs.version || '1.2.0' }}

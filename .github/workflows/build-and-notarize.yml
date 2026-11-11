@@ -1,32 +1,19 @@
-name: Build and Notarize
+name: Hina Desktop CI
 
 on:
   push:
-    branches: [main, develop]
-    paths-ignore:
-      - "**.md"
-      - "LICENSE"
-      - ".github/ISSUE_TEMPLATE/**"
-      - "openwhispr-mobile/**"
+    branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  changes:
-    uses: ./.github/workflows/ci-changes.yml
-    permissions:
-      contents: read
-
   quality:
-    needs: changes
-    if: needs.changes.outputs.desktop == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      build: ${{ github.event_name != 'pull_request' || (github.base_ref == 'main' && needs.changes.outputs.build == 'true') }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -37,6 +24,8 @@ jobs:
           cache: "npm"
       - name: Install dependencies
         run: npm ci --ignore-scripts
+      - name: Verify workflow contracts
+        run: node --test .github/scripts/workflows.test.cjs
       - name: Run quality checks
         run: npm run quality-check
       - name: Check translations
@@ -64,7 +53,6 @@ jobs:
 
   build-linux:
     needs: quality
-    if: needs.quality.outputs.build == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -158,12 +146,17 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: linux-build
-          path: dist/
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/latest-linux.yml
+          if-no-files-found: error
           retention-days: 7
 
   build-windows:
     needs: quality
-    if: needs.quality.outputs.build == 'true'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
@@ -270,17 +263,23 @@ jobs:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
+      - name: Verify Windows updater metadata
+        run: node scripts/verify-windows-update-assets.cjs dist
+
       - name: Upload Artifacts
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: windows-build
-          path: dist/
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
+          if-no-files-found: error
           retention-days: 7
 
   build-macos:
     needs: quality
-    if: needs.quality.outputs.build == 'true'
     runs-on: macos-latest
     strategy:
       fail-fast: false
@@ -419,19 +418,31 @@ jobs:
       - name: Verify packaged macOS native binaries
         run: |
           APP_PATH=$(ls -d dist/mac*/"Hina Desktop.app" | head -n1)
+          ARCH="${{ matrix.arch }}"
+          if [ "$ARCH" = x64 ]; then ARCH=x86_64; fi
+          lipo -verify_arch "$ARCH" "$APP_PATH/Contents/MacOS/Hina Desktop"
           for bin in macos-audio-tap macos-globe-listener macos-fast-paste macos-mic-listener macos-calendar-listener macos-text-monitor macos-window-bounds macos-media-remote; do
             test -x "$APP_PATH/Contents/Resources/bin/$bin" || { echo "Missing in bundle: $bin"; exit 1; }
+            lipo -verify_arch "$ARCH" "$APP_PATH/Contents/Resources/bin/$bin"
           done
           test -x "$APP_PATH/Contents/Resources/bin/MediaRemoteAdapter.framework/Versions/A/MediaRemoteAdapter" || { echo "Missing in bundle: MediaRemoteAdapter.framework"; exit 1; }
           test -f "$APP_PATH/Contents/Resources/bin/mediaremote-adapter.pl" || { echo "Missing in bundle: mediaremote-adapter.pl"; exit 1; }
           node scripts/verify-macos-parakeet.js "$APP_PATH"
+
+      - name: Prepare architecture-specific update metadata
+        run: cp dist/latest-mac.yml dist/latest-${{ matrix.arch }}-mac.yml
 
       - name: Upload Artifacts
         if: github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: macos-${{ matrix.arch }}-build
-          path: dist/
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.blockmap
+            dist/latest-${{ matrix.arch }}-mac.yml
+          if-no-files-found: error
           retention-days: 7
 
       - name: Cleanup Certificates
@@ -443,7 +454,7 @@ jobs:
 
   desktop-status:
     name: Desktop CI
-    needs: [changes, quality, build-linux, build-windows, build-macos]
+    needs: [quality, build-linux, build-windows, build-macos]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -451,20 +462,12 @@ jobs:
     steps:
       - name: Require all selected desktop checks
         env:
-          CHANGES_RESULT: ${{ needs.changes.result }}
-          DESKTOP: ${{ needs.changes.outputs.desktop }}
           QUALITY_RESULT: ${{ needs.quality.result }}
-          BUILD: ${{ needs.quality.outputs.build }}
           LINUX_RESULT: ${{ needs.build-linux.result }}
           WINDOWS_RESULT: ${{ needs.build-windows.result }}
           MACOS_RESULT: ${{ needs.build-macos.result }}
         run: |
-          test "$CHANGES_RESULT" = success
-          if [ "$DESKTOP" = true ]; then
-            test "$QUALITY_RESULT" = success
-            if [ "$BUILD" = true ]; then
-              test "$LINUX_RESULT" = success
-              test "$WINDOWS_RESULT" = success
-              test "$MACOS_RESULT" = success
-            fi
-          fi
+          test "$QUALITY_RESULT" = success
+          test "$LINUX_RESULT" = success
+          test "$WINDOWS_RESULT" = success
+          test "$MACOS_RESULT" = success

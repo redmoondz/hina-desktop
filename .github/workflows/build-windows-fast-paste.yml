@@ -63,6 +63,7 @@ jobs:
           path: windows-fast-paste-win32-x64.zip
 
       - name: Create or update release
+        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: windows-fast-paste-v${{ inputs.version || '2.0.0' }}
